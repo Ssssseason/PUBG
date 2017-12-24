@@ -3,14 +3,21 @@
 
 #include <vector>
 #include <glm\glm.hpp>
-#include "MGR.h"
 #include "Light.h"
 //todo model, obb manager class
+class Model {
+public:
+	bool nothing;
+};
+class OBB {
+public:
+	bool nothing;
+};
 
 class OBJ{
 public:
 	//path for loading model
-	OBJ(glm::vec4 &location, std::string &path, bool anim = false);
+	OBJ(glm::vec4 &location, std::string &path, bool anim);
 	virtual ~OBJ();
 	virtual void Draw(Light &l, glm::mat4x4 &view);
 protected:
@@ -23,7 +30,7 @@ protected:
 
 class MovableOBJ: public OBJ {
 public:
-	MovableOBJ(glm::vec4 &direction, float speed, glm::vec4 &location, std::string &path, bool anim = false);
+	MovableOBJ(glm::vec4 &direction, float speed, glm::vec4 &location, std::string &path, bool anim);
 	virtual ~MovableOBJ();
 	void Translate(glm::mat4x4 &mat);
 	void Scale(glm::mat4x4 &mat);
@@ -33,7 +40,7 @@ public:
 	void SetState();	
 	bool GetState() const;
 	// traverse all obj, detect collisions and update state and location
-	virtual void Update(std::vector<MGR> &managers);
+	virtual void Update();
 	virtual void Draw(Light &l, glm::mat4x4 &view);
 protected:
 	//x,y,z,0
@@ -45,13 +52,13 @@ protected:
 
 class Bullet : public MovableOBJ {
 public:
-	Bullet(glm::vec4 &direction, float speed, glm::vec4 &location, std::string &path, bool anim = false);
+	Bullet(glm::vec4 &direction, float speed, glm::vec4 &location, std::string &path, bool anim);
 	~Bullet();
 };
 
 class NPC : public MovableOBJ {
 public:
-	NPC(glm::vec4 &direction, float speed, glm::vec4 &location, std::string &path, bool anim = true);
+	NPC(glm::vec4 &direction, float speed, glm::vec4 &location, std::string &path, bool anim);
 	~NPC();
 	void Run();
 	void Stop();

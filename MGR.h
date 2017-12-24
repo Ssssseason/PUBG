@@ -11,9 +11,9 @@ public:
 	virtual ~MGR();
 	virtual void DrawAll();
 	virtual void AddOBJ();
-	virtual void DetectCollisionALL(OBJ* obj);
+	virtual void DetectCollisionALL(OBJ &obj);
 protected:
-	std::vector<OBJ*> s;
+	std::vector<OBJ> objects;
 };
 
 class NPCMGR : public MGR {

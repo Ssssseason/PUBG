@@ -11,7 +11,7 @@ public:
 	~Player();
 	void Shoot();
 	glm::mat4x4 GetView();
-	void Update(std::vector<MGR> &managers);
+	void Update();
 private:
 	Camera myCamera;
 };
