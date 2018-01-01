@@ -4,12 +4,9 @@
 #include <vector>
 #include <glm\glm.hpp>
 #include "Light.h"
+#include "obb.h"
 //todo model, obb manager class
 class Model {
-public:
-	bool nothing;
-};
-class OBB {
 public:
 	bool nothing;
 };

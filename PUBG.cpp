@@ -12,8 +12,12 @@
 #include "Light.h"
 #include "shader.h"
 
+int screenWidth = 800, screenHeight = 600;
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
+	screenWidth = width;
+	screenHeight = height;
 	glViewport(0, 0, width, height);
 }
 
@@ -21,6 +25,7 @@ void processInput(GLFWwindow *window) {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(window, true);
 	}
+	//todo game.player.camera.xxx
 }
 
 int main()
@@ -30,14 +35,13 @@ int main()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(screenWidth, screenHeight, "LearnOpenGL", NULL, NULL);
 	if (window == NULL) {
 		fprintf(stderr, "Failed to open GLFW window\n");
 		glfwTerminate();
 		return -1;
 	}
 	glfwMakeContextCurrent(window);
-	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
 	glewExperimental = true;
 	if (glewInit() != GLEW_OK) {
@@ -45,13 +49,16 @@ int main()
 		return -1;
 	}
 	glEnable(GL_DEPTH_TEST);
+
+
+	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
 	while (!glfwWindowShouldClose(window))
 	{
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		processInput(window);
-
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}

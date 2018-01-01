@@ -7,13 +7,14 @@
 class Player
 {
 public:
-	Player();
+	Player(glm::vec3 &loc, glm::vec3 &front, glm::vec3 &up, float speed, float sen);
 	~Player();
-	void Shoot();
 	glm::mat4x4 GetView();
-	void Update();
+	glm::mat4x4 GetProj();
+	void Draw();
 private:
 	Camera myCamera;
+	int score;
 };
 
 #endif // !PLAYER_H
