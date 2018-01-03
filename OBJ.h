@@ -21,7 +21,7 @@ protected:
 	//x,y,z,w
 	glm::vec4 loc; 
 	std::vector<Model*> model;
-	OBB obb;
+	obbs::OBB obb;
 	bool isAnim;
 };
 

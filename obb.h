@@ -6,28 +6,30 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-struct OBB {
-	std::vector<glm::vec3> axis = { glm::vec3(0,0,0), glm::vec3(0,0,0), glm::vec3(0,0,0) };
-	glm::vec3 center, halfDimension;
-};
+namespace obbs {
 
-void computeCovarianceMat(std::vector<glm::vec3> &vertices, glm::mat3 &covariance);
+	struct OBB {
+		std::vector<glm::vec3> axis = { glm::vec3(0,0,0), glm::vec3(0,0,0), glm::vec3(0,0,0) };
+		glm::vec3 center, halfDimension;
+	};
 
-void jacobiSolver(glm::mat3 &covariance, std::vector<double> &eValue, std::vector<glm::vec3> &eVec, double precision = 0.00001, double iteration = 10000);
+	void computeCovarianceMat(std::vector<glm::vec3> &vertices, glm::mat3 &covariance);
 
-void schmidtOrthogonal(glm::vec3 &u, glm::vec3 &v, glm::vec3 &w);
+	void jacobiSolver(glm::mat3 &covariance, std::vector<double> &eValue, std::vector<glm::vec3> &eVec, double precision = 0.00001, double iteration = 10000);
 
-void computerLen(std::vector<glm::vec3> &vertices, std::vector<glm::vec3> &axis, glm::vec3 &center, glm::vec3 &halfDimension);
+	void schmidtOrthogonal(glm::vec3 &u, glm::vec3 &v, glm::vec3 &w);
 
-//generate OBB
-OBB getOBB(std::vector<glm::vec3> &vertices);
+	void computerLen(std::vector<glm::vec3> &vertices, std::vector<glm::vec3> &axis, glm::vec3 &center, glm::vec3 &halfDimension);
 
-//detect collision
-bool collides(const OBB& a, const OBB &b);
+	//generate OBB
+	OBB getOBB(std::vector<glm::vec3> &vertices);
 
-//if collision happens, get overlap distance in the orientation of a or b
-double getOBBOverlap(const OBB& a, const OBB &b, glm::vec3 &orientation);
+	//detect collision
+	bool collides(const OBB& a, const OBB &b);
 
+	//if collision happens, get overlap distance in the orientation of a or b
+	double getOBBOverlap(const OBB& a, const OBB &b, glm::vec3 &orientation);
+}
 
 //class OBB {
 //private:

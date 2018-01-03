@@ -2,7 +2,7 @@
 #include "obb.h"
 
 //input vertices, output covariance
-void computeCovarianceMat(std::vector<glm::vec3> &vertices, glm::mat3 &covariance) {
+void obbs::computeCovarianceMat(std::vector<glm::vec3> &vertices, glm::mat3 &covariance) {
 
 	//average
 	glm::vec3 avgPos(0, 0, 0);
@@ -31,7 +31,7 @@ void computeCovarianceMat(std::vector<glm::vec3> &vertices, glm::mat3 &covarianc
 }
 
 //input covariance(changed), precision, iteration, output eValue, eVec(t), 
-void jacobiSolver(glm::mat3 &covariance, std::vector<double> &eValue, std::vector<glm::vec3> &eVec, double precision, double iteration) {
+void obbs::jacobiSolver(glm::mat3 &covariance, std::vector<double> &eValue, std::vector<glm::vec3> &eVec, double precision, double iteration) {
 	assert(eValue.size() == 3);
 	assert(eVec.size() == 3);
 	double max;
@@ -112,7 +112,7 @@ void jacobiSolver(glm::mat3 &covariance, std::vector<double> &eValue, std::vecto
 }
 
 //input&output u, v, w(eVec)
-void schmidtOrthogonal(glm::vec3 &u, glm::vec3 &v, glm::vec3 &w) {
+void obbs::schmidtOrthogonal(glm::vec3 &u, glm::vec3 &v, glm::vec3 &w) {
 	u = glm::normalize(u);
 	v -= glm::dot(u, v) * u;
 	v = glm::normalize(v);
@@ -120,7 +120,7 @@ void schmidtOrthogonal(glm::vec3 &u, glm::vec3 &v, glm::vec3 &w) {
 }
 
 //input vertices, axis, output center, halfDimension
-void computerLen(std::vector<glm::vec3> &vertices, std::vector<glm::vec3> &axis, glm::vec3 &center, glm::vec3 &halfDimension) {
+void obbs::computerLen(std::vector<glm::vec3> &vertices, std::vector<glm::vec3> &axis, glm::vec3 &center, glm::vec3 &halfDimension) {
 	assert(axis.size() == 3);
 	std::vector<glm::vec3>::iterator it;
 	glm::vec3 maxP(DBL_MIN, DBL_MIN, DBL_MIN);
@@ -137,7 +137,7 @@ void computerLen(std::vector<glm::vec3> &vertices, std::vector<glm::vec3> &axis,
 }
 
 //input vertices, output axis, center, halfDimension
-OBB getOBB(std::vector<glm::vec3> &vertices) {
+obbs::OBB obbs::getOBB(std::vector<glm::vec3> &vertices) {
 	OBB obb;
 	std::vector<glm::vec3> verticesCP = vertices;
 	glm::mat3 covariance;
@@ -156,7 +156,7 @@ OBB getOBB(std::vector<glm::vec3> &vertices) {
 	return obb;
 }
 
-bool collides(const OBB& a, const OBB &b) {
+bool obbs::collides(const OBB& a, const OBB &b) {
 	glm::vec3 axis[15];
 	axis[0] = a.axis[0];
 	axis[1] = a.axis[1];
@@ -183,7 +183,7 @@ bool collides(const OBB& a, const OBB &b) {
 	return true;
 }
 
-double getOBBOverlap(const OBB& a, const OBB &b, glm::vec3 &orientation) {
+double obbs::getOBBOverlap(const OBB& a, const OBB &b, glm::vec3 &orientation) {
 	glm::vec3 vecAB = a.center - b.center;
 	glm::vec3 halfA[3] = { a.halfDimension.x * a.axis[0], a.halfDimension.y * a.axis[1], a.halfDimension.z * a.axis[2] };
 	glm::vec3 halfB[3] = { b.halfDimension.x * b.axis[0], b.halfDimension.y * b.axis[1], b.halfDimension.z * b.axis[2] };
@@ -193,7 +193,6 @@ double getOBBOverlap(const OBB& a, const OBB &b, glm::vec3 &orientation) {
 	}
 	return fabs(dis - fabs(glm::dot(orientation, vecAB)));
 }
-
 
 //bool OBB::collidesWith(OBB &obb) const {
 //	glm::vec3 axis[15];
