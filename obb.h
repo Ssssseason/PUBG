@@ -1,7 +1,7 @@
 #pragma once
 #ifndef OBB_H
 #include <vector>
-#include <glm\glm.hpp>
+#include <glm/glm.hpp>
 #include <assert.h>
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -24,23 +24,13 @@ namespace obbs {
 	//generate OBB
 	OBB getOBB(std::vector<glm::vec3> &vertices);
 
+	OBB moveOBB(const OBB &obb, const glm::mat4 &modelMat);
+
 	//detect collision
 	bool collides(const OBB& a, const OBB &b);
 
-	//if collision happens, get overlap distance in the orientation of a or b
-	double getOBBOverlap(const OBB& a, const OBB &b, glm::vec3 &orientation);
+	////if collision happens, get overlap distance in the orientation of a or b
+	//glm::vec3 getOverlap(const OBB& a, const OBB &b);
 }
-
-//class OBB {
-//private:
-//	std::vector<glm::vec3> axis = {glm::vec3(0,0,0), glm::vec3(0,0,0), glm::vec3(0,0,0) };
-//	glm::vec3 center, halfDimension;
-//
-//public:
-//	OBB();
-//	void initOBB(std::vector<glm::vec3> &vertices);
-//	bool collidesWith(OBB &obb) const;
-//	double getOverlap(OBB &obb, glm::vec3 &orientation);
-//};
 
 #endif // !OBB_H

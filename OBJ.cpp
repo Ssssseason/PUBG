@@ -2,20 +2,44 @@
 #include "OBJ.h"
 
 
-OBJ::OBJ(glm::vec4 &location, std::string &path, bool anim) : loc(location), isAnim(anim){
-	//model
+OBJ::OBJ(glm::mat4 &modelMat, const std::string &modelPath, bool anim):
+modelMat(modelMat), model(modelPath)
+{
+	//generate obb
+	std::vector<glm::vec3> vertices;
+	std::vector<Vertex>::iterator vtxIter;
+	std::vector<Mesh>::iterator meshIter;
+	for (meshIter = model.meshes.begin(); meshIter != model.meshes.end(); ++meshIter) {
+		for (vtxIter = meshIter->vertices.begin(); vtxIter != meshIter->vertices.end(); ++vtxIter) {
+			vertices.push_back(vtxIter->Position);
+		}
+	}
+	obb = obbs::getOBB(vertices);
+	currentObb = obb;
 }
+
 
 OBJ::~OBJ()
 {	
 	//todo model
 }
 
-void OBJ::Draw(Light &l, glm::mat4x4 &view) {
-
+void OBJ::Draw(Shader &shader) {
+	shader.setMat4("model", modelMat);
+	model.Draw(shader);
 }
 
-MovableOBJ::MovableOBJ(glm::vec4 &direction, float speed, glm::vec4 &location, std::string &path, bool anim): dir(direction), speed(speed), isLived(true), OBJ(location, path, anim) {
+glm::mat4 OBJ::getModelMat() {
+	return modelMat;
+}
+
+void OBJ::setModelMat(glm::mat4 &newModelMat) {
+	modelMat = newModelMat;
+	currentObb = obbs::moveOBB(obb, newModelMat);
+}
+
+MovableOBJ::MovableOBJ(glm::vec4 &direction, float speed, glm::mat4 &modelMat, std::string &path, bool anim)
+	: dir(direction), speed(speed), isLived(true), OBJ(modelMat, path, anim) {
 }
 
 MovableOBJ::~MovableOBJ() {
@@ -46,11 +70,12 @@ void MovableOBJ::Update() {
 
 }
 
-void MovableOBJ::Draw(Light &l, glm::mat4x4 &view) {
+void MovableOBJ::Draw(Shader &shader) {
 	//
 }
 
-Bullet::Bullet(glm::vec4 &direction, float speed, glm::vec4 &location, std::string &path, bool anim): MovableOBJ(direction, speed, location, path, anim) {
+Bullet::Bullet(glm::vec4 &direction, float speed, glm::mat4 &modelMat, std::string &path, bool anim): 
+	MovableOBJ(direction, speed, modelMat, path, anim) {
 
 }
 
@@ -58,7 +83,8 @@ Bullet::~Bullet() {
 
 }
 
-NPC::NPC(glm::vec4 &direction, float speed, glm::vec4 &location, std::string &path, bool anim) : MovableOBJ(direction, speed, location, path, anim) {
+NPC::NPC(glm::vec4 &direction, float speed, glm::mat4 &modelMat, std::string &path, bool anim) : 
+	MovableOBJ(direction, speed, modelMat, path, anim) {
 
 }
 

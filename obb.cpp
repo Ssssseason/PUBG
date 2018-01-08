@@ -139,6 +139,9 @@ void obbs::computerLen(std::vector<glm::vec3> &vertices, std::vector<glm::vec3> 
 //input vertices, output axis, center, halfDimension
 obbs::OBB obbs::getOBB(std::vector<glm::vec3> &vertices) {
 	OBB obb;
+	for (int i = 0; i < 3; i++) {
+		obb.axis[i][i] = 1;
+	}
 	std::vector<glm::vec3> verticesCP = vertices;
 	glm::mat3 covariance;
 	std::vector<double> eValue(3);
@@ -154,6 +157,18 @@ obbs::OBB obbs::getOBB(std::vector<glm::vec3> &vertices) {
 	schmidtOrthogonal(obb.axis[maxIdx], obb.axis[(maxIdx + 1) % 3], obb.axis[(maxIdx + 2) % 3]);
 	computerLen(vertices, obb.axis, obb.center, obb.halfDimension);
 	return obb;
+}
+
+obbs::OBB obbs::moveOBB(const OBB &obb, const glm::mat4 &modelMat) {
+	glm::mat3 normalMat = glm::transpose(glm::inverse(glm::mat3 (modelMat)));
+	obbs::OBB newObb;
+	newObb.center = glm::vec3(modelMat * glm::vec4(obb.center, 1.0f));
+	for (int i = 0; i < 3; i++) {
+		newObb.axis[i] = normalMat * (glm::normalize(obb.axis[i]) * obb.halfDimension[i]);
+		newObb.halfDimension[i] = newObb.axis[i].length();
+		newObb.axis[i] = glm::normalize(newObb.axis[i]);
+	}
+	return newObb;
 }
 
 bool obbs::collides(const OBB& a, const OBB &b) {
@@ -183,51 +198,18 @@ bool obbs::collides(const OBB& a, const OBB &b) {
 	return true;
 }
 
-double obbs::getOBBOverlap(const OBB& a, const OBB &b, glm::vec3 &orientation) {
-	glm::vec3 vecAB = a.center - b.center;
-	glm::vec3 halfA[3] = { a.halfDimension.x * a.axis[0], a.halfDimension.y * a.axis[1], a.halfDimension.z * a.axis[2] };
-	glm::vec3 halfB[3] = { b.halfDimension.x * b.axis[0], b.halfDimension.y * b.axis[1], b.halfDimension.z * b.axis[2] };
-	double dis = 0;
-	for (int i = 0; i < 3; i++) {
-		dis += fabs(glm::dot(halfA[i], orientation)) + fabs(glm::dot(halfB[i], orientation));
-	}
-	return fabs(dis - fabs(glm::dot(orientation, vecAB)));
-}
-
-//bool OBB::collidesWith(OBB &obb) const {
-//	glm::vec3 axis[15];
-//	axis[0] = this->axis[0];
-//	axis[1] = this->axis[1];
-//	axis[2] = this->axis[2];
-//	axis[3] = obb.axis[0];
-//	axis[4] = obb.axis[1];
-//	axis[5] = obb.axis[2];
-//	for (int i = 0; i < 3; i++) {
-//		for (int j = 0; j < 3; j++) {
-//			axis[5 + i] = glm::normalize(glm::cross(this->axis[i], obb.axis[j]));
-//		}
-//	}
-//	glm::vec3 vecAB = this->center - obb.center;
-//	glm::vec3 halfA[3] = { this->halfDimension.x * this->axis[0], this->halfDimension.y * this->axis[1], this->halfDimension.z * this->axis[2] };
-//	glm::vec3 halfB[3] = { obb.halfDimension.x * obb.axis[0], obb.halfDimension.y * obb.axis[1], obb.halfDimension.z * obb.axis[2] };
-//	for (int i = 0; i < 15; i++) {
-//		double dis = 0;
-//		for (int j = 0; j < 3; j++) {
-//			dis += fabs(glm::dot(halfA[j], axis[i])) + fabs(glm::dot(halfB[j], axis[i]));
-//		}
-//		if (dis < fabs(glm::dot(axis[i], vecAB)))
-//			return false;
-//	}
-//	return true;
-//}
-
-//double OBB::getOverlap(OBB &obb, glm::vec3 &orientation) {
-//	glm::vec3 vecAB = this->center - obb.center;
-//	glm::vec3 halfA[3] = { this->halfDimension.x * this->axis[0], this->halfDimension.y * this->axis[1], this->halfDimension.z * this->axis[2] };
-//	glm::vec3 halfB[3] = { obb.halfDimension.x * obb.axis[0], obb.halfDimension.y * obb.axis[1], obb.halfDimension.z * obb.axis[2] };
+//glm::vec3 obbs::getOverlap(const OBB& a, const OBB &b) {
+//	glm::vec3 vecAB = a.center - b.center;
+//	glm::vec3 norVecAB = glm::normalize(vecAB);
+//	glm::vec3 halfA[3] = { a.halfDimension.x * a.axis[0], a.halfDimension.y * a.axis[1], a.halfDimension.z * a.axis[2] };
+//	glm::vec3 halfB[3] = { b.halfDimension.x * b.axis[0], b.halfDimension.y * b.axis[1], b.halfDimension.z * b.axis[2] };
 //	double dis = 0;
+//	//for (int i = 0; i < 3; i++) {
+//	//	dis += fabs(glm::dot(halfA[i], orientation)) + fabs(glm::dot(halfB[i], orientation));
+//	//}
+//	//return fabs(dis - fabs(glm::dot(orientation, vecAB)));
 //	for (int i = 0; i < 3; i++) {
-//		dis += fabs(glm::dot(halfA[i], orientation)) + fabs(glm::dot(halfB[i], orientation));
+//		dis += fabs(glm::dot(halfA[i], norVecAB)) + fabs(glm::dot(halfB[i], norVecAB));
 //	}
-//	return dis - fabs(glm::dot(orientation, vecAB));
+//	return (float)(dis - fabs(glm::dot(norVecAB, vecAB))) * norVecAB;
 //}

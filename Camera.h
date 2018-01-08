@@ -26,6 +26,7 @@ public:
 	int screenWidth;
 	int screenHeight;
 	void Move(MovementDirection dir);
+	//void Move(MovementDirection dir, float speed);
 	void Rotate(double xPos, double yPos);
 	void Zoom(double yOff);
 	glm::mat4 GetView();

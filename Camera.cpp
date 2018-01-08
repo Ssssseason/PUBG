@@ -33,6 +33,25 @@ void Camera::Move(Camera::MovementDirection dir) {
 	UpdateVector();
 }
 
+//void Camera::Move(Camera::MovementDirection dir, float speed) {
+//	switch (dir)
+//	{
+//	case Camera::FORWARD:
+//		location += front * speed;
+//		break;
+//	case Camera::BACKWARD:
+//		location -= front * speed;
+//		break;
+//	case Camera::LEFT:
+//		location -= right * speed;
+//		break;
+//	case Camera::RIGHT:
+//		location += right * speed;
+//		break;
+//	}
+//	UpdateVector();
+//}
+
 void Camera::Rotate(double xPos, double yPos) {
 	double xOff, yOff;
 	if (isFirstMouseMove) {
