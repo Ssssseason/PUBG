@@ -27,6 +27,7 @@ void framebufferSizeCallback(GLFWwindow* window, int width, int height)
 {
 	screenWidth = width;
 	screenHeight = height;
+	myPlayer.updateScreenSize(width, height);
 	glViewport(0, 0, width, height);
 }
 

@@ -19,6 +19,7 @@ public:
 	void Zoom(double yOff);
 	bool checkCollision(OBJ &obj);
 	void setSpeed(float newSpeed);
+	void updateScreenSize(float width, float height);
 private:
 	Camera myCamera;
 	obbs::OBB obb;

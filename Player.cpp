@@ -69,3 +69,7 @@ void Player::Draw(Shader& shader) {
 void Player::setSpeed(float newSpeed) {
 	myCamera.speed = newSpeed;
 }
+
+void Player::updateScreenSize(float width, float height) {
+	myCamera.updateScreenSize(width, height);
+}
