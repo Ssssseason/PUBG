@@ -54,14 +54,14 @@ void processInput(GLFWwindow *window) {
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
 		myPlayer.Move(Camera::FORWARD);
 	}
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-		myPlayer.Move(Camera::BACKWARD);
-	}
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
 		myPlayer.Move(Camera::LEFT);
 	}
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
 		myPlayer.Move(Camera::RIGHT);
+	}
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+		myPlayer.Move(Camera::BACKWARD);
 	}
 	if (glfwGetKey(window, GLFW_KEY_F1) == GLFW_PRESS) {
 		screenShot = true;
@@ -86,8 +86,8 @@ bool takeScreenShot(const char* filePath, int screenWidth, int screenHeight) {
 int main()
 {
 	glfwInit();
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	GLFWwindow* window = glfwCreateWindow(screenWidth, screenHeight, "LearnOpenGL", NULL, NULL);
@@ -114,6 +114,7 @@ int main()
 	glm::vec3 playerFront = glm::vec3(0, 1, 0);
 	glm::vec3 playerUp = glm::vec3(0, 0, 1);
 	myPlayer = Player(playerLoc, playerFront, playerUp, 0.01, 0.1);
+	myPlayer.updateScreenSize(screenWidth, screenHeight);
 
 	glm::mat4 model;
 	glm::mat4 view;
@@ -137,7 +138,7 @@ int main()
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
-		myPlayer.setSpeed(deltaTime * 2);
+		myPlayer.setSpeed(deltaTime * 2.5);
 		processInput(window);
 		myPlayer.updateOBB();
 
@@ -168,8 +169,8 @@ int main()
 		ourTreeOBJ.setModelMat(model);
 
 		model = glm::mat4();
+		model = glm::translate(model, glm::vec3(10.0f, -20.75f, 0.0f));
 		model = glm::rotate(model, (float)M_PI_2, glm::vec3(1, 0, 0));
-		model = glm::translate(model, glm::vec3(2.0f, -2.75f, 0.0f));
 		//model = glm::scale(model, glm::vec3(0.005f, 0.005f, 0.005f));
 		model = glm::scale(model, glm::vec3(0.05f, 0.05f, 0.05f));
 		ourSceneOBJ.setModelMat(model);
@@ -185,10 +186,18 @@ int main()
 		ourTreeOBJ.Draw(ourShader);
 		ourFemaleOBJ.Draw(ourShader);
 		ourSceneOBJ.Draw(ourShader);
+		myPlayer.clearLastOps();
 
 		//take at most one screenshot in a second. press F1
 		if (screenShot) {
 			if (currentFrame - lastScreenshotTime > 1) {
+				//debug
+				ourTreeOBJ.showOBB();
+				ourFemaleOBJ.showOBB();
+				ourSceneOBJ.showOBB();
+				myPlayer.showOBB();
+				std::cout << std::endl;
+				//screenshot
 				lastScreenshotTime = currentFrame;
 				time_t now = time(NULL);
 				char filePath[256];

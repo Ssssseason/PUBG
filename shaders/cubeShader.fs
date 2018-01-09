@@ -1,4 +1,4 @@
-#version 440 core
+#version 330 core
 
 in vec3 TexCoord; // 代表3D纹理坐标的方向向量
 out vec4 FragColor;

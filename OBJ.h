@@ -16,6 +16,8 @@ public:
 	glm::mat4 getModelMat();
 	void setModelMat(glm::mat4 &newModelMat);
 	obbs::OBB currentObb;
+	//debug
+	void showOBB();
 protected:
 	//x,y,z,w
 	glm::mat4 modelMat;

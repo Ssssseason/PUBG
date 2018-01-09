@@ -38,6 +38,13 @@ void OBJ::setModelMat(glm::mat4 &newModelMat) {
 	currentObb = obbs::moveOBB(obb, newModelMat);
 }
 
+void OBJ::showOBB() {
+	std::cout << "current obb center:" << currentObb.center[0] << "," << currentObb.center[1] << "," << currentObb.center[2] << "\t";
+	std::cout << "half dimension:" << currentObb.halfDimension[0] << "," << currentObb.halfDimension[1] << "," << currentObb.halfDimension[2] << std::endl;
+	std::cout << "org obb center:" << obb.center[0] << "," << obb.center[1] << "," << obb.center[2] << "\t";
+	std::cout << "half dimension:" << obb.halfDimension[0] << "," << obb.halfDimension[1] << "," << obb.halfDimension[2] << std::endl;
+}
+
 MovableOBJ::MovableOBJ(glm::vec4 &direction, float speed, glm::mat4 &modelMat, std::string &path, bool anim)
 	: dir(direction), speed(speed), isLived(true), OBJ(modelMat, path, anim) {
 }

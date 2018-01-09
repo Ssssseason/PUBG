@@ -11,6 +11,8 @@ public:
 	{
 		FORWARD, BACKWARD, LEFT, RIGHT
 	};
+	bool lastOp[4];
+	//MovementDirection lastOp[4];
 	Camera();
 	Camera(glm::vec3 &loc, glm::vec3 &front, glm::vec3 &up, float speed, float sen);
 	~Camera();
@@ -25,15 +27,16 @@ public:
 	float fov;
 	int screenWidth;
 	int screenHeight;
-	void Move(MovementDirection dir);
+	void Move(MovementDirection dir, bool updateOp = true);
 	//void Move(MovementDirection dir, float speed);
 	void Rotate(double xPos, double yPos);
 	void Zoom(double yOff);
 	glm::mat4 GetView();
 	glm::mat4 GetProj();
 	void updateScreenSize(int w, int h);
-	void UpdateVector();
+	void clearLastOps();
 private:
+	void UpdateVector();
 	double xLastPos;
 	double yLastPos;
 	bool isFirstMouseMove;

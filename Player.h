@@ -20,6 +20,8 @@ public:
 	bool checkCollision(OBJ &obj);
 	void setSpeed(float newSpeed);
 	void updateScreenSize(float width, float height);
+	void showOBB();
+	void clearLastOps();
 private:
 	Camera myCamera;
 	obbs::OBB obb;

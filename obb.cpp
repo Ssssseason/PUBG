@@ -160,12 +160,17 @@ obbs::OBB obbs::getOBB(std::vector<glm::vec3> &vertices) {
 }
 
 obbs::OBB obbs::moveOBB(const OBB &obb, const glm::mat4 &modelMat) {
+	std::vector<glm::vec3> points;
+	for (int i = 0; i < 3; i++) {
+		points.push_back(obb.axis[i] * obb.halfDimension[i] + obb.center);
+	}
 	glm::mat3 normalMat = glm::transpose(glm::inverse(glm::mat3 (modelMat)));
 	obbs::OBB newObb;
 	newObb.center = glm::vec3(modelMat * glm::vec4(obb.center, 1.0f));
 	for (int i = 0; i < 3; i++) {
-		newObb.axis[i] = normalMat * (glm::normalize(obb.axis[i]) * obb.halfDimension[i]);
-		newObb.halfDimension[i] = newObb.axis[i].length();
+		points[i] = glm::vec3(modelMat * glm::vec4(points[i], 1.0f));
+		newObb.axis[i] = points[i] - newObb.center;
+		newObb.halfDimension[i] =  sqrt(glm::dot(newObb.axis[i], newObb.axis[i]));
 		newObb.axis[i] = glm::normalize(newObb.axis[i]);
 	}
 	return newObb;
@@ -197,6 +202,10 @@ bool obbs::collides(const OBB& a, const OBB &b) {
 	}
 	return true;
 }
+
+//glm::vec3 obbs::getRV(const OBB &a, const OBB &b) {
+//	return glm::normalize(b.center - a.center);
+//}
 
 //glm::vec3 obbs::getOverlap(const OBB& a, const OBB &b) {
 //	glm::vec3 vecAB = a.center - b.center;

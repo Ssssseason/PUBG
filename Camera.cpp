@@ -14,7 +14,9 @@ Camera::~Camera()
 {
 }
 
-void Camera::Move(Camera::MovementDirection dir) {
+void Camera::Move(Camera::MovementDirection dir, bool updateOp) {
+	if (updateOp)
+		lastOp[dir] = true;
 	switch (dir)
 	{
 	case Camera::FORWARD:
@@ -108,4 +110,10 @@ void Camera::UpdateVector() {
 void Camera::updateScreenSize(int w, int h) {
 	screenHeight = h;
 	screenWidth = w;
+}
+
+void Camera::clearLastOps() {
+	for (int i = 0; i < 4; i++) {
+		lastOp[i] = false;
+	}
 }
