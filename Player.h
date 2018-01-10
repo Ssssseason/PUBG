@@ -20,11 +20,14 @@ public:
 	bool checkCollision(OBJ &obj);
 	void setSpeed(float newSpeed);
 	void updateScreenSize(float width, float height);
-	void showOBB();
+	void showOBB();//debug
 	void clearLastOps();
+	glm::vec3 getLoc();
 private:
 	Camera myCamera;
+	Model model;
 	obbs::OBB obb;
+	obbs::OBB currentObb;
 	int score;
 };
 

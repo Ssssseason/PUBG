@@ -17,11 +17,12 @@
 #include "Light.h"
 #include "shader.h"
 #include "skybox.h"
+#include "depthMap.h"
 
 int screenWidth = 800, screenHeight = 600;
 Player myPlayer;
 float lastFrame, deltaTime, lastScreenshotTime;
-bool screenShot = false;
+bool enScreenShot = false;
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height)
 {
@@ -64,7 +65,7 @@ void processInput(GLFWwindow *window) {
 		myPlayer.Move(Camera::BACKWARD);
 	}
 	if (glfwGetKey(window, GLFW_KEY_F1) == GLFW_PRESS) {
-		screenShot = true;
+		enScreenShot = true;
 	}
 }
 
@@ -110,38 +111,52 @@ int main()
 	}
 	glEnable(GL_DEPTH_TEST);
 
-	glm::vec3 playerLoc = glm::vec3(0, -3, 1);
+	//initialize player position and view direction
+	glm::vec3 playerLoc = glm::vec3(0, -10, 10);
+	//glm::vec3 playerLoc = glm::vec3(40, -40, 40);
 	glm::vec3 playerFront = glm::vec3(0, 1, 0);
 	glm::vec3 playerUp = glm::vec3(0, 0, 1);
-	myPlayer = Player(playerLoc, playerFront, playerUp, 0.01, 0.1);
+	myPlayer = Player(playerLoc, playerFront, playerUp, 0.05, 0.1);
 	myPlayer.updateScreenSize(screenWidth, screenHeight);
 
-	glm::mat4 model;
-	glm::mat4 view;
-	glm::mat4 proj;
+	glm::mat4 model, view, proj;
+	glm::mat4 lightProj, lightView, lightSpaceMat;
 
-	Shader ourShader("shaders/model_loading.vs", "shaders/model_loading.fs");
+	glm::vec3 lightPos;
+	glm::vec3 viewPos;
+
+	//load shaders
+	Shader modelShader("shaders/modelShader.vs", "shaders/modelShader.fs");
 	Shader cubeShader("shaders/cubeShader.vs", "shaders/cubeShader.fs");
+	Shader depthMapShader("shaders/depthMapShader.vs", "shaders/depthMapShader.fs");
+	Shader modelShadowShader("shaders/modelShadowShader.vs", "shaders/modelShadowShader.fs");
+	//load models
 	OBJ ourFemaleOBJ(model, "models/female/female02.obj");
-	OBJ ourTreeOBJ(model, "models/tree/tree_low.obj");
+	OBJ ourMaleOBJ(model, "models/man/male02.obj");
+	//OBJ ourTreeOBJ(model, "models/tree/tree_low.obj");
 	OBJ ourSceneOBJ(model, "models/terrain/mountains_4.obj");
 
 	SKYBOX mySkyBox;
 	mySkyBox.load("skybox");
+
+	DepthMap myDepthMap(1024, 1024);
 
 	while (!glfwWindowShouldClose(window))
 	{
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		//balance moving speed
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
+		myPlayer.setSpeed(deltaTime * 12.5);
 
-		myPlayer.setSpeed(deltaTime * 2.5);
+		//process user input: move, rotate, zoom, shot, screenshot, etc.
 		processInput(window);
-		myPlayer.updateOBB();
+		myPlayer.updateOBB();//manually handle it because of multikey
 
+		//skybox
 		// view/projection transformations
 		model = glm::mat4();
 		proj = myPlayer.GetProj();
@@ -153,9 +168,9 @@ int main()
 		cubeShader.setMat4("projection", proj);
 		cubeShader.setInt("cubemap", 0);
 		mySkyBox.draw();
+		glDepthMask(GL_TRUE);
 
-		ourShader.use();	//enable shader before setting uniforms
-		// render the loaded model
+		//handle all other objects' behavior
 		model = glm::mat4();
 		model = glm::rotate(model, (float)M_PI_2, glm::vec3(1, 0, 0));
 		model = glm::translate(model, glm::vec3(0.0f, -2.75f, 0.0f));
@@ -163,36 +178,79 @@ int main()
 		ourFemaleOBJ.setModelMat(model);
 
 		model = glm::mat4();
-		model = glm::translate(model, glm::vec3(0.0f, 10.f, 0.0f));
+		model = glm::translate(model, glm::vec3(0.0f, 10.f, -5.0f));
 		model = glm::rotate(model, (float)M_PI_2, glm::vec3(1, 0, 0));
-		model = glm::scale(model, glm::vec3(2.f, 2.0f, 2.0f));
-		ourTreeOBJ.setModelMat(model);
+		//model = glm::scale(model, glm::vec3(2.f, 2.0f, 2.0f));
+		model = glm::scale(model, glm::vec3(0.05f, 0.05f, 0.05f));
+		ourMaleOBJ.setModelMat(model);
+		//ourTreeOBJ.setModelMat(model);
 
 		model = glm::mat4();
-		model = glm::translate(model, glm::vec3(10.0f, -20.75f, 0.0f));
+		model = glm::translate(model, glm::vec3(-50.0f, 100.75f, -20.0f));
+		model = glm::scale(model, glm::vec3(0.05f, 0.05f, 0.02f));
 		model = glm::rotate(model, (float)M_PI_2, glm::vec3(1, 0, 0));
-		//model = glm::scale(model, glm::vec3(0.005f, 0.005f, 0.005f));
-		model = glm::scale(model, glm::vec3(0.05f, 0.05f, 0.05f));
 		ourSceneOBJ.setModelMat(model);
 
-		myPlayer.checkCollision(ourTreeOBJ);
+		//check collisions
+		//myPlayer.checkCollision(ourTreeOBJ);
 		myPlayer.checkCollision(ourFemaleOBJ);
+		myPlayer.checkCollision(ourMaleOBJ);
 		myPlayer.checkCollision(ourSceneOBJ);
 
-		glDepthMask(GL_TRUE);
+		//render depth
+		lightPos = glm::vec3(0, -5, 10);
+		lightView = glm::lookAt(lightPos, glm::vec3(0.0f), glm::vec3(0.0, 10.0, 0.0));
+		lightProj = glm::perspective(glm::radians(90.0f), 1.f, 1.f, 100.f);
+		lightSpaceMat = lightProj * lightView;
+		depthMapShader.use();
+		depthMapShader.setMat4("lightSpaceMatrix", lightSpaceMat);
+		glViewport(0, 0, myDepthMap.shadowWidth, myDepthMap.shadowHeight);
+		glBindFramebuffer(GL_FRAMEBUFFER, myDepthMap.depthMapFBO);
+		glClear(GL_DEPTH_BUFFER_BIT);
+		ourFemaleOBJ.Draw(depthMapShader);
+		ourMaleOBJ.Draw(depthMapShader);
+		ourSceneOBJ.Draw(depthMapShader);
+		myPlayer.Draw(depthMapShader);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);	//解绑！
+
+		//render objects
 		view = myPlayer.GetView();
-		ourShader.setMat4("projection", proj);
-		ourShader.setMat4("view", view);
-		ourTreeOBJ.Draw(ourShader);
-		ourFemaleOBJ.Draw(ourShader);
-		ourSceneOBJ.Draw(ourShader);
+		viewPos = myPlayer.getLoc();
+		//modelShader.use();	//enable shader before setting uniforms
+		//modelShader.setMat4("projection", proj);
+		//modelShader.setMat4("view", view);
+		//modelShader.setVec3("viewPos", viewPos);
+		//modelShader.setVec3("lightPos", lightPos);
+		////ourTreeOBJ.Draw(modelShader);
+		//ourFemaleOBJ.Draw(modelShader);
+		//ourMaleOBJ.Draw(modelShader);
+		//ourSceneOBJ.Draw(modelShader);
+		//myPlayer.Draw(modelShader);
+
+		modelShadowShader.use();	//enable shader before setting uniforms
+		modelShadowShader.setMat4("projection", proj);
+		modelShadowShader.setMat4("view", view);
+		modelShadowShader.setVec3("viewPos", viewPos);
+		modelShadowShader.setVec3("lightPos", lightPos);
+		modelShadowShader.setMat4("lightSpaceMatrix", lightSpaceMat);
+		glActiveTexture(GL_TEXTURE0);
+		//glBindTexture(GL_TEXTURE_2D, depthMap);
+		glBindTexture(GL_TEXTURE_2D, myDepthMap.depthMap);
+		modelShadowShader.setInt("depthMap", 0);
+
+		//ourTreeOBJ.Draw(modelShader);
+		ourFemaleOBJ.Draw(modelShadowShader);
+		ourMaleOBJ.Draw(modelShadowShader);
+		ourSceneOBJ.Draw(modelShadowShader);
+		myPlayer.Draw(modelShadowShader);
+
 		myPlayer.clearLastOps();
 
 		//take at most one screenshot in a second. press F1
-		if (screenShot) {
+		if (enScreenShot) {
 			if (currentFrame - lastScreenshotTime > 1) {
 				//debug
-				ourTreeOBJ.showOBB();
+				//ourTreeOBJ.showOBB();
 				ourFemaleOBJ.showOBB();
 				ourSceneOBJ.showOBB();
 				myPlayer.showOBB();
@@ -210,7 +268,7 @@ int main()
 				else {
 					std::cout << "failed to take screenshot!\n";
 				}
-				screenShot = false;
+				enScreenShot = false;
 			}
 		}
 

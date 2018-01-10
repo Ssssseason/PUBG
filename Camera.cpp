@@ -117,3 +117,14 @@ void Camera::clearLastOps() {
 		lastOp[i] = false;
 	}
 }
+
+glm::vec3 Camera::getLoc() {
+	return location;
+}
+
+//glm::mat4 Camera::getModelMat() {
+//	glm::mat4 modelMat;
+//	modelMat = glm::translate(modelMat, location);
+//	modelMat = glm::rotate(modelMat, glm::radians(90 - yaw), glm::vec3(0, 0, 1));
+//	return modelMat;
+//}

@@ -203,9 +203,9 @@ bool obbs::collides(const OBB& a, const OBB &b) {
 	return true;
 }
 
-//glm::vec3 obbs::getRV(const OBB &a, const OBB &b) {
-//	return glm::normalize(b.center - a.center);
-//}
+glm::vec3 obbs::getRV(const OBB &a, const OBB &b) {
+	return glm::normalize(b.center - a.center);
+}
 
 //glm::vec3 obbs::getOverlap(const OBB& a, const OBB &b) {
 //	glm::vec3 vecAB = a.center - b.center;

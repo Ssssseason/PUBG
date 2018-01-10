@@ -35,6 +35,8 @@ public:
 	glm::mat4 GetProj();
 	void updateScreenSize(int w, int h);
 	void clearLastOps();
+	glm::vec3 getLoc();
+	//glm::mat4 getModelMat();
 private:
 	void UpdateVector();
 	double xLastPos;
