@@ -2,8 +2,10 @@
 #ifndef PLAYER_H
 #include <vector>
 #include <glm/glm.hpp>
-#include "MGR.h"
+#include <GL/glew.h>
 #include "Camera.h"
+#include "shader.h"
+#include "OBJ.h"
 class Player
 {
 public:
@@ -20,10 +22,12 @@ public:
 	bool checkCollision(OBJ &obj);
 	void setSpeed(float newSpeed);
 	void updateScreenSize(float width, float height);
-	void showOBB();//debug
+	void showInfo();//debug
 	void clearLastOps();
 	glm::vec3 getLoc();
+	glm::vec3 getFront();
 private:
+	glm::mat4 oriModelMat;
 	Camera myCamera;
 	Model model;
 	obbs::OBB obb;

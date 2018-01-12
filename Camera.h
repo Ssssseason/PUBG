@@ -28,15 +28,12 @@ public:
 	int screenWidth;
 	int screenHeight;
 	void Move(MovementDirection dir, bool updateOp = true);
-	//void Move(MovementDirection dir, float speed);
 	void Rotate(double xPos, double yPos);
 	void Zoom(double yOff);
 	glm::mat4 GetView();
 	glm::mat4 GetProj();
 	void updateScreenSize(int w, int h);
 	void clearLastOps();
-	glm::vec3 getLoc();
-	//glm::mat4 getModelMat();
 private:
 	void UpdateVector();
 	double xLastPos;

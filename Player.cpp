@@ -19,6 +19,14 @@ Player::Player(glm::vec3 &loc, glm::vec3 &front, glm::vec3 &up, float speed, flo
 	//};
 	//obb = obbs::getOBB(vertices);
 
+	//init original model matrix
+	glm::mat4 modelMat = glm::mat4();
+	modelMat = glm::translate(modelMat, glm::vec3(2, 0, -9.8));
+	modelMat = glm::rotate(modelMat, (float)M_PI_2, glm::vec3(0, 0, 1));
+	modelMat = glm::rotate(modelMat, (float)M_PI_2, glm::vec3(1, 0, 0));
+	modelMat = glm::scale(modelMat, glm::vec3(0.05f, 0.05f, 0.05f));
+	oriModelMat = modelMat;
+
 	//generate obb
 	std::vector<glm::vec3> vertices;
 	std::vector<Vertex>::iterator vtxIter;
@@ -69,14 +77,15 @@ bool Player::checkCollision(OBJ &obj) {
 				}
 			}
 		}
-		std::cout << "collision! " << myCamera.lastOp << "\n";
+		std::cout << "collision! " << myCamera.lastOp[0] << " " << myCamera.lastOp[1] << " " << myCamera.lastOp[2] << " " << myCamera.lastOp[3] << "\n";
 		//if the collision is caused by rotate view
 		if (!res) {
 			//myCamera.Move(Camera::BACKWARD, false);
 			glm::vec3 rv = obbs::getRV(currentObb, obj.currentObb);
-			myCamera.location -= myCamera.speed * rv;
+			myCamera.location -= myCamera.speed * glm::normalize(rv);
 			res = true;
 		}
+		updateOBB();
 	}
 	return res;
 }
@@ -89,11 +98,12 @@ void Player::updateOBB() {
 	modelMat = glm::translate(modelMat, myCamera.location);
 	modelMat = glm::rotate(modelMat, glm::radians(90 - myCamera.yaw), glm::vec3(0, 0, 1));
 	//modelMat = glm::rotate(modelMat, glm::radians(-myCamera.pitch), glm::vec3(0, 1, 0));
-
-	modelMat = glm::translate(modelMat, glm::vec3(2, 0, -9.8));
-	modelMat = glm::rotate(modelMat, (float)M_PI_2, glm::vec3(0, 0, 1));
-	modelMat = glm::rotate(modelMat, (float)M_PI_2, glm::vec3(1, 0, 0));
-	modelMat = glm::scale(modelMat, glm::vec3(0.05f, 0.05f, 0.05f));
+	modelMat = modelMat * oriModelMat;
+	//modelMat = glm::translate(modelMat, glm::vec3(2, 0, -9.8));
+	//modelMat = glm::rotate(modelMat, (float)M_PI_2, glm::vec3(0, 0, 1));
+	//modelMat = glm::rotate(modelMat, (float)M_PI_2, glm::vec3(1, 0, 0));
+	//modelMat = glm::scale(modelMat, glm::vec3(0.05f, 0.05f, 0.05f));
+	
 	currentObb = obbs::moveOBB(obb, modelMat);
 }
 
@@ -114,32 +124,37 @@ void Player::Draw(Shader& shader) {
 	modelMat = glm::translate(modelMat, myCamera.location);
 	modelMat = glm::rotate(modelMat, glm::radians(90 - myCamera.yaw), glm::vec3(0, 0, 1));
 	modelMat = glm::rotate(modelMat, glm::radians(-myCamera.pitch), glm::vec3(0, 1, 0));
-	//modelMat = glm::translate(modelMat, glm::vec3( * (float)2 + glm::vec3(0,0,-9.5));
-	modelMat = glm::translate(modelMat, glm::vec3(2, 0, -9.8));
 
-	modelMat = glm::rotate(modelMat, (float)M_PI_2, glm::vec3(0, 0, 1));
-	modelMat = glm::rotate(modelMat, (float)M_PI_2, glm::vec3(1, 0, 0));
-	modelMat = glm::scale(modelMat, glm::vec3(0.05f, 0.05f, 0.05f));
+	modelMat = modelMat * oriModelMat;
+	//modelMat = glm::translate(modelMat, glm::vec3(2, 0, -9.8));
+	//modelMat = glm::translate(modelMat, glm::vec3(4, 0, 0));
+	//modelMat = glm::rotate(modelMat, (float)M_PI_2, glm::vec3(0, 0, 1));
+	//modelMat = glm::rotate(modelMat, (float)M_PI_2, glm::vec3(1, 0, 0));
+	//modelMat = glm::scale(modelMat, glm::vec3(0.05f, 0.05f, 0.05f));
+
 	shader.setMat4("model", modelMat);
 	model.Draw(shader);
 
 	//draw white sight
 	int Width = 1;
 	int hLen = 15;
+	int yOff = 0, xOff = -2;
 	glEnable(GL_SCISSOR_TEST);
-	glScissor(myCamera.screenWidth / 2 - hLen, myCamera.screenHeight / 2 - Width, hLen - 4, Width);
+	glScissor(myCamera.screenWidth / 2 - hLen + xOff, myCamera.screenHeight / 2 - Width + yOff, hLen - 4, Width);
 	glClearColor(1, 1, 1, 1);
 	glClear(GL_COLOR_BUFFER_BIT);
-	glScissor(myCamera.screenWidth / 2 + 5, myCamera.screenHeight/2 - Width, hLen - 4, Width);
+	glScissor(myCamera.screenWidth / 2 + 5 + xOff, myCamera.screenHeight/2 - Width + yOff, hLen - 4, Width);
 	glClearColor(1, 1, 1, 1);
 	glClear(GL_COLOR_BUFFER_BIT);
-	glScissor(myCamera.screenWidth / 2, myCamera.screenHeight / 2 + 4, Width, hLen -6);
+	glScissor(myCamera.screenWidth / 2 + xOff, myCamera.screenHeight / 2 + 4 + yOff, Width, hLen -6);
 	glClearColor(1, 1, 1, 1);
 	glClear(GL_COLOR_BUFFER_BIT); 
-	glScissor(myCamera.screenWidth / 2, myCamera.screenHeight / 2 - hLen, Width, hLen - 6);
+	glScissor(myCamera.screenWidth / 2 + xOff, myCamera.screenHeight / 2 - hLen + yOff, Width, hLen - 6);
 	glClearColor(1, 1, 1, 1);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glDisable(GL_SCISSOR_TEST);
+
+	//clearLastOps();
 }
 
 void Player::setSpeed(float newSpeed) {
@@ -151,9 +166,16 @@ void Player::updateScreenSize(float width, float height) {
 }
 
 //debug
-void Player::showOBB() {
+void Player::showInfo() {
 	std::cout << "camera center:" << currentObb.center[0] << "," << currentObb.center[1] << "," << currentObb.center[2] << "\t";
 	std::cout << "half dimension:" << currentObb.halfDimension[0] << "," << currentObb.halfDimension[1] << "," << currentObb.halfDimension[2] << std::endl;
+	std::cout << myCamera.location.x << " " << myCamera.location.y << " " << myCamera.location.z << "\n";
+	std::cout << "yaw:" << myCamera.yaw << "\n";
+	std::cout << "pitch:" << myCamera.pitch << "\n";
+	std::cout << myCamera.front.x << " " << myCamera.front.y << " " << myCamera.front.z << "\t";
+	std::cout << myCamera.right.x << " " << myCamera.right.y << " " << myCamera.right.z << "\t";
+	std::cout << myCamera.up.x << " " << myCamera.up.y << " " << myCamera.up.z << std::endl;
+
 }
 
 void Player::clearLastOps() {
@@ -161,5 +183,9 @@ void Player::clearLastOps() {
 }
 
 glm::vec3 Player::getLoc() {
-	return myCamera.getLoc();
+	return myCamera.location;
+}
+
+glm::vec3 Player::getFront() {
+	return myCamera.front;
 }

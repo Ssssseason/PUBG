@@ -40,6 +40,9 @@ void mouseBtnCallback(GLFWwindow* window, int button, int action, int mods) {
 	if (action == GLFW_PRESS) {
 		if (button == GLFW_MOUSE_BUTTON_LEFT) {
 			std::cout << "left mouse button pressed!\n";
+			glm::vec3 loc = myPlayer.getLoc();
+			glm::vec3 front = myPlayer.getFront();
+			//todo: create new bullet
 		}
 	}
 }
@@ -112,7 +115,7 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 
 	//initialize player position and view direction
-	glm::vec3 playerLoc = glm::vec3(0, -10, 10);
+	glm::vec3 playerLoc = glm::vec3(0, -3, 0);
 	//glm::vec3 playerLoc = glm::vec3(40, -40, 40);
 	glm::vec3 playerFront = glm::vec3(0, 1, 0);
 	glm::vec3 playerUp = glm::vec3(0, 0, 1);
@@ -130,11 +133,10 @@ int main()
 	Shader cubeShader("shaders/cubeShader.vs", "shaders/cubeShader.fs");
 	Shader depthMapShader("shaders/depthMapShader.vs", "shaders/depthMapShader.fs");
 	Shader modelShadowShader("shaders/modelShadowShader.vs", "shaders/modelShadowShader.fs");
-	//load models
-	OBJ ourFemaleOBJ(model, "models/female/female02.obj");
-	OBJ ourMaleOBJ(model, "models/man/male02.obj");
-	//OBJ ourTreeOBJ(model, "models/tree/tree_low.obj");
-	OBJ ourSceneOBJ(model, "models/terrain/mountains_4.obj");
+	//create managers and implicitly load models
+	SceneMRG sceneMgr;
+	NPCMGR npcMgr;
+	//todo bullet manager
 
 	SKYBOX mySkyBox;
 	mySkyBox.load("skybox");
@@ -147,17 +149,26 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//balance moving speed
-		float currentFrame = glfwGetTime();
+		float currentFrame = (float)glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
-		myPlayer.setSpeed(deltaTime * 12.5);
+		myPlayer.setSpeed((float)deltaTime * 12.5);
 
+		//update all objs
 		//process user input: move, rotate, zoom, shot, screenshot, etc.
 		processInput(window);
 		myPlayer.updateOBB();//manually handle it because of multikey
 
-		//skybox
-		// view/projection transformations
+		//update NPCs, and bullets
+		npcMgr.UpdateAll();
+		//todo: update bullets
+
+		//check collisions for NPC, bullet, player
+		sceneMgr.DetectCollisionALL(myPlayer);
+		npcMgr.DetectCollisionALL(myPlayer);
+
+		//render all
+		//render skybox
 		model = glm::mat4();
 		proj = myPlayer.GetProj();
 		glDepthMask(GL_FALSE);
@@ -170,33 +181,6 @@ int main()
 		mySkyBox.draw();
 		glDepthMask(GL_TRUE);
 
-		//handle all other objects' behavior
-		model = glm::mat4();
-		model = glm::rotate(model, (float)M_PI_2, glm::vec3(1, 0, 0));
-		model = glm::translate(model, glm::vec3(0.0f, -2.75f, 0.0f));
-		model = glm::scale(model, glm::vec3(0.05f, 0.05f, 0.05f));
-		ourFemaleOBJ.setModelMat(model);
-
-		model = glm::mat4();
-		model = glm::translate(model, glm::vec3(0.0f, 10.f, -5.0f));
-		model = glm::rotate(model, (float)M_PI_2, glm::vec3(1, 0, 0));
-		//model = glm::scale(model, glm::vec3(2.f, 2.0f, 2.0f));
-		model = glm::scale(model, glm::vec3(0.05f, 0.05f, 0.05f));
-		ourMaleOBJ.setModelMat(model);
-		//ourTreeOBJ.setModelMat(model);
-
-		model = glm::mat4();
-		model = glm::translate(model, glm::vec3(-50.0f, 100.75f, -20.0f));
-		model = glm::scale(model, glm::vec3(0.05f, 0.05f, 0.02f));
-		model = glm::rotate(model, (float)M_PI_2, glm::vec3(1, 0, 0));
-		ourSceneOBJ.setModelMat(model);
-
-		//check collisions
-		//myPlayer.checkCollision(ourTreeOBJ);
-		myPlayer.checkCollision(ourFemaleOBJ);
-		myPlayer.checkCollision(ourMaleOBJ);
-		myPlayer.checkCollision(ourSceneOBJ);
-
 		//render depth
 		lightPos = glm::vec3(0, -5, 10);
 		lightView = glm::lookAt(lightPos, glm::vec3(0.0f), glm::vec3(0.0, 10.0, 0.0));
@@ -207,26 +191,16 @@ int main()
 		glViewport(0, 0, myDepthMap.shadowWidth, myDepthMap.shadowHeight);
 		glBindFramebuffer(GL_FRAMEBUFFER, myDepthMap.depthMapFBO);
 		glClear(GL_DEPTH_BUFFER_BIT);
-		ourFemaleOBJ.Draw(depthMapShader);
-		ourMaleOBJ.Draw(depthMapShader);
-		ourSceneOBJ.Draw(depthMapShader);
+		sceneMgr.DrawAll(depthMapShader);
+		npcMgr.DrawAll(depthMapShader);
+		//todo: render bullets
 		myPlayer.Draw(depthMapShader);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);	//解绑！
 
-		//render objects
+		//formally render all
 		view = myPlayer.GetView();
 		viewPos = myPlayer.getLoc();
-		//modelShader.use();	//enable shader before setting uniforms
-		//modelShader.setMat4("projection", proj);
-		//modelShader.setMat4("view", view);
-		//modelShader.setVec3("viewPos", viewPos);
-		//modelShader.setVec3("lightPos", lightPos);
-		////ourTreeOBJ.Draw(modelShader);
-		//ourFemaleOBJ.Draw(modelShader);
-		//ourMaleOBJ.Draw(modelShader);
-		//ourSceneOBJ.Draw(modelShader);
-		//myPlayer.Draw(modelShader);
-
+		glViewport(0, 0, screenWidth, screenHeight);
 		modelShadowShader.use();	//enable shader before setting uniforms
 		modelShadowShader.setMat4("projection", proj);
 		modelShadowShader.setMat4("view", view);
@@ -234,14 +208,12 @@ int main()
 		modelShadowShader.setVec3("lightPos", lightPos);
 		modelShadowShader.setMat4("lightSpaceMatrix", lightSpaceMat);
 		glActiveTexture(GL_TEXTURE0);
-		//glBindTexture(GL_TEXTURE_2D, depthMap);
 		glBindTexture(GL_TEXTURE_2D, myDepthMap.depthMap);
 		modelShadowShader.setInt("depthMap", 0);
 
-		//ourTreeOBJ.Draw(modelShader);
-		ourFemaleOBJ.Draw(modelShadowShader);
-		ourMaleOBJ.Draw(modelShadowShader);
-		ourSceneOBJ.Draw(modelShadowShader);
+		sceneMgr.DrawAll(modelShadowShader);
+		npcMgr.DrawAll(modelShadowShader);
+		//todo:render bullets
 		myPlayer.Draw(modelShadowShader);
 
 		myPlayer.clearLastOps();
@@ -250,10 +222,9 @@ int main()
 		if (enScreenShot) {
 			if (currentFrame - lastScreenshotTime > 1) {
 				//debug
-				//ourTreeOBJ.showOBB();
-				ourFemaleOBJ.showOBB();
-				ourSceneOBJ.showOBB();
-				myPlayer.showOBB();
+				sceneMgr.ShowInfo();
+				npcMgr.ShowInfo();
+				myPlayer.showInfo();
 				std::cout << std::endl;
 				//screenshot
 				lastScreenshotTime = currentFrame;

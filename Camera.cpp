@@ -35,25 +35,6 @@ void Camera::Move(Camera::MovementDirection dir, bool updateOp) {
 	UpdateVector();
 }
 
-//void Camera::Move(Camera::MovementDirection dir, float speed) {
-//	switch (dir)
-//	{
-//	case Camera::FORWARD:
-//		location += front * speed;
-//		break;
-//	case Camera::BACKWARD:
-//		location -= front * speed;
-//		break;
-//	case Camera::LEFT:
-//		location -= right * speed;
-//		break;
-//	case Camera::RIGHT:
-//		location += right * speed;
-//		break;
-//	}
-//	UpdateVector();
-//}
-
 void Camera::Rotate(double xPos, double yPos) {
 	double xOff, yOff;
 	if (isFirstMouseMove) {
@@ -118,13 +99,3 @@ void Camera::clearLastOps() {
 	}
 }
 
-glm::vec3 Camera::getLoc() {
-	return location;
-}
-
-//glm::mat4 Camera::getModelMat() {
-//	glm::mat4 modelMat;
-//	modelMat = glm::translate(modelMat, location);
-//	modelMat = glm::rotate(modelMat, glm::radians(90 - yaw), glm::vec3(0, 0, 1));
-//	return modelMat;
-//}

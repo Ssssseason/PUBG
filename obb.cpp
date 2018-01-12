@@ -186,7 +186,7 @@ bool obbs::collides(const OBB& a, const OBB &b) {
 	axis[5] = b.axis[2];
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
-			axis[5 + i] = glm::normalize(glm::cross(a.axis[i], b.axis[j]));
+			axis[6 + i * 3 + j] = glm::normalize(glm::cross(a.axis[i], b.axis[j]));
 		}
 	}
 	glm::vec3 vecAB = a.center - b.center;
