@@ -35,6 +35,7 @@ public:
 	void DrawAll(Shader &shader);
 	void DetectCollisionALL(MovableOBJ &mobj);
 	void DetectCollisionALL(Player &player);
+	//todo: collide with itself
 	void UpdateAll();
 	void ShowInfo();
 	std::vector<MovableOBJ> objects;

@@ -85,10 +85,10 @@ void NPCMGR::DrawAll(Shader &shader) {
 }
 
 void NPCMGR::DetectCollisionALL(MovableOBJ &mobj) {
-	//todo: collide with another NPC
-	for (it = objects.begin(); it != objects.end(); ++it) {
-		mobj.detectCollision(*it);
-	}
+	//todo: collide 这个函数应该是没有什么卵用的
+	//for (it = objects.begin(); it != objects.end(); ++it) {
+	//	mobj.detectCollision(*it);
+	//}
 }
 
 void NPCMGR::DetectCollisionALL(Player &player) {
