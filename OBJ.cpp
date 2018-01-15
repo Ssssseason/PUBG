@@ -2,23 +2,12 @@
 #include "OBJ.h"
 
 
-OBJ::OBJ(glm::mat4 &modelMat, const std::string &modelPath, bool anim):
-oriModelMat(modelMat), model(modelPath)
+OBJ::OBJ(glm::mat4 &modelMat, Model mod, bool anim):
+oriModelMat(modelMat), model(mod)
 {
 	//generate obb
 	initOBB(model);
 	updateCurrenOBB(modelMat);
-	//currentObb = obbs::moveOBB(obb, oriModelMat);
-	//std::vector<glm::vec3> vertices;
-	//std::vector<Vertex>::iterator vtxIter;
-	//std::vector<Mesh>::iterator meshIter;
-	//for (meshIter = model.meshes.begin(); meshIter != model.meshes.end(); ++meshIter) {
-	//	for (vtxIter = meshIter->vertices.begin(); vtxIter != meshIter->vertices.end(); ++vtxIter) {
-	//		vertices.push_back(vtxIter->Position);
-	//	}
-	//}
-	//obb = obbs::getOBB(vertices);
-	//currentObb = obb;
 }
 
 OBJ::~OBJ()
@@ -34,14 +23,13 @@ void OBJ::Draw(Shader &shader) {
 void OBJ::setOriModelMat(glm::mat4 &newModelMat) {
 	oriModelMat = newModelMat;
 	updateCurrenOBB(newModelMat);
-	//currentObb = obbs::moveOBB(obb, newModelMat);
 }
 
 void OBJ::showInfo() {
 	std::cout << "current obb center:" << currentObb.center[0] << "," << currentObb.center[1] << "," << currentObb.center[2] << "\t";
 	std::cout << "half dimension:" << currentObb.halfDimension[0] << "," << currentObb.halfDimension[1] << "," << currentObb.halfDimension[2] << std::endl;
-	//std::cout << "org obb center:" << obb.center[0] << "," << obb.center[1] << "," << obb.center[2] << "\t";
-	//std::cout << "half dimension:" << obb.halfDimension[0] << "," << obb.halfDimension[1] << "," << obb.halfDimension[2] << std::endl;
+	std::cout << "ori obb center:" << obb.center[0] << "," << obb.center[1] << "," << obb.center[2] << "\t";
+	std::cout << "half dimension:" << obb.halfDimension[0] << "," << obb.halfDimension[1] << "," << obb.halfDimension[2] << std::endl;
 }
 
 void OBJ::initOBB(Model &model) {
@@ -62,15 +50,23 @@ void OBJ::updateCurrenOBB(glm::mat4 &modelMat) {
 	currentObb = obbs::moveOBB(obb, modelMat);
 }
 
-MovableOBJ::MovableOBJ(glm::vec3 &loc, glm::vec3 &front, glm::vec3 &up, float speed, glm::mat4 &modelMat, const std::string &path, bool anim)
-	: location(loc), front(front), up(up), speed(speed), pitch(0), yaw(0), isLive(true), OBJ(modelMat, path, anim)
+MovableOBJ::MovableOBJ(glm::vec3 &loc, glm::vec3 &front, glm::vec3 &up, float speed,  glm::mat4 &modelMat, Model mod, double yaw, double pitch, bool anim)
+	: location(loc), front(front), up(up), speed(speed), pitch(pitch), yaw(yaw), v(0), isLive(true), jumpAlr(false), OBJ(modelMat, mod, anim)
 {
-	//generate obb
-	initOBB(model);
+
 	update();
 }
 
 MovableOBJ::~MovableOBJ() {
+
+}
+
+void MovableOBJ::showInfo() {
+	std::cout << "location:" << location[0] << " " << location[1] << " " << location[2] << "\t";
+	std::cout << "current obb center:" << currentObb.center[0] << "," << currentObb.center[1] << "," << currentObb.center[2] << "\t";
+	std::cout << "half dimension:" << currentObb.halfDimension[0] << "," << currentObb.halfDimension[1] << "," << currentObb.halfDimension[2] << std::endl;
+	std::cout << "ori obb center:" << obb.center[0] << "," << obb.center[1] << "," << obb.center[2] << "\t";
+	std::cout << "half dimension:" << obb.halfDimension[0] << "," << obb.halfDimension[1] << "," << obb.halfDimension[2] << std::endl;
 
 }
 
@@ -91,17 +87,19 @@ void MovableOBJ::move(MovableOBJ::MovementDirection dir, bool updateOp) {
 	case MovableOBJ::RIGHT:
 		location += right * speed;
 		break;
+	case MovableOBJ::UP:
+		v = rand() % 9;
+		break;
 	}
-	update();
-	//updateVector();
+	//update();
 }
 
 void MovableOBJ::setYaw(double yaw) {
 	this->yaw = yaw;
-	update();
+	//update();
 }
 
-void MovableOBJ::setPitch(double pitch) {
+void MovableOBJ::setPitch(float pitch) {
 	if (pitch > 89) {
 		pitch = 89;
 	}
@@ -109,14 +107,9 @@ void MovableOBJ::setPitch(double pitch) {
 		pitch = -89;
 	}
 	this->pitch = pitch;
-	update();
+	//update();
 }
-double MovableOBJ::getYaw() {
-	return yaw;
-}
-double MovableOBJ::getPitch() {
-	return pitch;
-}
+
 
 void MovableOBJ::update() {
 	front.x = cos(glm::radians(pitch)) * sin(glm::radians(yaw));
@@ -126,6 +119,16 @@ void MovableOBJ::update() {
 	updateObb();
 }
 
+void MovableOBJ::updateVertical(float deltaTime)
+{
+	v -= deltaTime * 9.8;
+	location.z += deltaTime * v - 9.8 * deltaTime * deltaTime;
+	if (location.z <= 0) { 
+		location.z = 0; 
+		v = 0; 
+		jumpAlr = false; 
+	}
+}
 void MovableOBJ::updateVector() {
 	front = glm::normalize(front);
 	glm::vec3 zAxis = glm::vec3(0, 0, 1);
@@ -143,7 +146,8 @@ void MovableOBJ::updateObb() {
 	currentObb = obbs::moveOBB(obb, modelMat);
 }
 
-void MovableOBJ::Draw(Shader &shader) {
+void MovableOBJ::Draw(Shader &shader)
+{
 	glm::mat4 modelMat;
 	modelMat = glm::translate(modelMat, location);
 	modelMat = glm::rotate(modelMat, glm::radians(90 - yaw), glm::vec3(0, 0, 1));
@@ -159,27 +163,15 @@ bool MovableOBJ::detectCollision(OBJ &obj) {
 	return obbs::collides(currentObb, obj.currentObb);
 }
 
-//bool MovableOBJ::detectCollision(MovableOBJ &mobj) {
-//	//only detect, but do nothing
-//	return obbs::collides(currentObb, mobj.currentObb);
-//}
-
 void MovableOBJ::clearLastOps() {
 	for (int i = 0; i < 4; i++) {
 		lastOp[i] = false;
 	}
 }
 
-////keep or remove it
-//void MovableOBJ::SetState() {
-//
-//}
-//bool MovableOBJ::GetState() const {
-//	return true;
-//}
 
-NPC::NPC(glm::vec3 &loc, glm::vec3 &front, glm::vec3 &up, float speed, glm::mat4 &modelMat, const std::string &path, bool anim) 
-: MovableOBJ(loc, front, up, speed, modelMat, path, anim)
+NPC::NPC(glm::vec3 &loc, glm::vec3 &front, glm::vec3 &up, float speed, glm::mat4 &modelMat, Model mod, double yaw, double pitch, bool anim)
+: turnDegree(0), MovableOBJ(loc, front, up, speed, modelMat, mod,yaw,pitch, anim)
 {
 
 }
@@ -205,6 +197,7 @@ bool NPC::detectCollision(OBJ &obj) {
 				}
 			}
 		}
+		move(MovableOBJ::BACKWARD, false);
 		std::cout << "collision! " << lastOp[0] << " " << lastOp[1] << " " << lastOp[2] << " " << lastOp[3] << "\n";
 		//if the collision is caused by rotate view
 		if (!res) {
@@ -217,21 +210,20 @@ bool NPC::detectCollision(OBJ &obj) {
 	return res;
 }
 
-//bool NPC::detectCollision(MovableOBJ &mobj) {
-//	return false;
-//}
-
-Bullet::Bullet(glm::vec3 &loc, glm::vec3 &front, glm::vec3 &up, float speed, glm::mat4 &modelMat, const std::string &path, bool anim)
-	: MovableOBJ(loc, front, up, speed, modelMat, path, anim)
+Bullet::Bullet(glm::vec3 &loc, glm::vec3 &front, glm::vec3 &up, float speed, glm::mat4 &modelMat, Model mod, double yaw, double pitch, bool anim)
+	: MovableOBJ(loc, front, up, speed, modelMat, mod, yaw, pitch, anim)
 {
-
+	//shooted = false;
 }
 
-glm::vec3 Bullet::getLoc() {
-	return location;
+void Bullet::Draw(Shader &shader)
+{
+	glm::mat4 modelMat;
+	modelMat = glm::translate(modelMat, location);
+	modelMat = glm::rotate(modelMat, glm::radians(90 - yaw), glm::vec3(0, 0, 1));
+	modelMat = glm::rotate(modelMat, glm::radians(-pitch), glm::vec3(0, 1, 0));
+	modelMat = modelMat * oriModelMat;
+	shader.setMat4("model", modelMat);
+	model.Draw(shader);
+	clearLastOps();
 }
-
-glm::vec3 Bullet::getFront() {
-	return front;
-}
-

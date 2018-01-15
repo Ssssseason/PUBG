@@ -1,11 +1,12 @@
-// PUBG.cpp: 定义控制台应用程序的入口点。
-//
 
 #include "stdafx.h"
 #include <iostream>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+//#include <glut/glut.h>
 #include <glm/glm.hpp>
+#include <stdlib.h> 
+#include <time.h> 
 #include <ctime>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -19,10 +20,16 @@
 #include "skybox.h"
 #include "depthMap.h"
 
-int screenWidth = 800, screenHeight = 600;
+
+BulletMGR bulletMgr;
 Player myPlayer;
+
+int screenWidth = 1920, screenHeight = 1080;
 float lastFrame, deltaTime, lastScreenshotTime;
 bool enScreenShot = false;
+bool isMidNight = false;
+int lasttime = 0;
+float lightIntensity = 1.0f;
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height)
 {
@@ -42,7 +49,12 @@ void mouseBtnCallback(GLFWwindow* window, int button, int action, int mods) {
 			std::cout << "left mouse button pressed!\n";
 			glm::vec3 loc = myPlayer.getLoc();
 			glm::vec3 front = myPlayer.getFront();
-			//todo: create new bullet
+			glm::vec3 up = myPlayer.getUp();
+			//std::cout << "location:" << loc[0] << " " << loc[1] << " " << loc[2] << "\t";
+			std::cout << front.x << " " << front.y << " " << front.z << endl;
+			bulletMgr.CreateNewBullet(loc, front, 0.5f, up, myPlayer.getYaw(), myPlayer.getPitch());
+			myPlayer.model = myPlayer.model2;
+			lasttime = 3;
 		}
 	}
 }
@@ -67,8 +79,30 @@ void processInput(GLFWwindow *window) {
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
 		myPlayer.Move(Camera::BACKWARD);
 	}
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+		if (!myPlayer.jump_alr)
+		{
+			myPlayer.Move(Camera::UP);
+			myPlayer.jump_alr = true;
+		}
+	}
 	if (glfwGetKey(window, GLFW_KEY_F1) == GLFW_PRESS) {
 		enScreenShot = true;
+	}
+	if (glfwGetKey(window, GLFW_KEY_F2) == GLFW_PRESS) {
+		isMidNight = !isMidNight;
+	}
+	if (glfwGetKey(window, GLFW_KEY_F3) == GLFW_PRESS) {
+		lightIntensity -= 0.01f;
+		if (lightIntensity < 0) {
+			lightIntensity = 0;
+		}
+	}
+	if (glfwGetKey(window, GLFW_KEY_F4) == GLFW_PRESS) {
+		lightIntensity += 0.01f;
+		if (lightIntensity > 1) {
+			lightIntensity = 1;
+		}
 	}
 }
 
@@ -94,7 +128,7 @@ int main()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	GLFWwindow* window = glfwCreateWindow(screenWidth, screenHeight, "LearnOpenGL", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(screenWidth, screenHeight, "PUBG", NULL, NULL);
 	if (window == NULL) {
 		fprintf(stderr, "Failed to open GLFW window\n");
 		glfwTerminate();
@@ -112,11 +146,13 @@ int main()
 		fprintf(stderr, "Failed to initialize GLEW\n");
 		return -1;
 	}
+
+	srand((unsigned)time(NULL));
+
 	glEnable(GL_DEPTH_TEST);
 
 	//initialize player position and view direction
 	glm::vec3 playerLoc = glm::vec3(0, -3, 0);
-	//glm::vec3 playerLoc = glm::vec3(40, -40, 40);
 	glm::vec3 playerFront = glm::vec3(0, 1, 0);
 	glm::vec3 playerUp = glm::vec3(0, 0, 1);
 	myPlayer = Player(playerLoc, playerFront, playerUp, 0.05, 0.1);
@@ -133,15 +169,61 @@ int main()
 	Shader cubeShader("shaders/cubeShader.vs", "shaders/cubeShader.fs");
 	Shader depthMapShader("shaders/depthMapShader.vs", "shaders/depthMapShader.fs");
 	Shader modelShadowShader("shaders/modelShadowShader.vs", "shaders/modelShadowShader.fs");
-	//create managers and implicitly load models
+
+	//Model bullet("models/bullet/bullet2.obj");
+	//Model female("models/female/female02.obj");
+	//Model male("models/man/male02.obj");
+	Model scene("models/terrain/mountains_4.obj");
+	//Model sanji("models/Sanji/Sanji.obj");
+	//Model boy("models/boy/boy.obj");
+	//Model aerith("models/Aerith/Aerith.obj");
+	//Model patrick1("models/patrick/patrick1.obj");
+	//Model patrick2("models/patrick/patrick2.obj");
+	//Model patrick3("models/patrick/patrick3.obj");
+	//Model patrick4("models/patrick/patrick4.obj");
+	//Model patrick5("models/patrick/patrick5.obj");
+	//Model patrick6("models/patrick/patrick6.obj");
+	//Model patrick7("models/patrick/patrick7.obj");
+	//Model patrick8("models/patrick/patrick8.obj");
+	//Model patrick9("models/patrick/patrick9.obj");
+	//Model patrick[9] = { patrick1, patrick2, patrick3, patrick4,patrick5, patrick6, patrick7, patrick8 ,patrick9 };
+
 	SceneMRG sceneMgr;
 	NPCMGR npcMgr;
-	//todo bullet manager
+	std::vector<NPC>::iterator it;
 
-	SKYBOX mySkyBox;
-	mySkyBox.load("skybox");
+	//load static models
+	
+	//model = glm::mat4();
+	//model = glm::translate(model, glm::vec3(0.0f, 10.75f, 0.0f));
+	//model = glm::rotate(model, (float)M_PI_2, glm::vec3(1, 0, 0));
+	//model = glm::scale(model, glm::vec3(0.05f, 0.05f, 0.05f));
+	//OBJ ourFemaleOBJ(model, female);
 
-	DepthMap myDepthMap(1024, 1024);
+	//model = glm::mat4();
+	//model = glm::translate(model, glm::vec3(0.0f, 20.f, -5.0f));
+	//model = glm::rotate(model, (float)M_PI_2, glm::vec3(1, 0, 0));
+	//model = glm::scale(model, glm::vec3(0.05f, 0.05f, 0.05f));
+	//OBJ ourMaleOBJ(model, male);
+	
+	//ground
+	model = glm::mat4();
+	model = glm::translate(model, glm::vec3(-50.0f, 100.75f, -20.0f));
+	model = glm::rotate(model, (float)M_PI_2, glm::vec3(1, 0, 0));
+	model = glm::scale(model, glm::vec3(0.05f, 0.05f, 0.05f));
+	OBJ ourSceneOBJ(model, scene);
+	//add to scene manager
+	//sceneMgr.objects.push_back(ourFemaleOBJ);
+	//sceneMgr.objects.push_back(ourMaleOBJ);
+	sceneMgr.objects.push_back(ourSceneOBJ);
+
+	SKYBOX daySkyBox, nightSkyBox;
+	daySkyBox.load("skybox/daytime");
+	nightSkyBox.load("skybox/night");
+
+	DepthMap myDepthMap(4098, 4098);
+
+	int frames = 0;
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -157,15 +239,19 @@ int main()
 		//update all objs
 		//process user input: move, rotate, zoom, shot, screenshot, etc.
 		processInput(window);
-		myPlayer.updateOBB();//manually handle it because of multikey
+		//manually handle it because of multikey
+		myPlayer.updateVertical(deltaTime);
+		myPlayer.updateOBB();
 
-		//update NPCs, and bullets
-		npcMgr.UpdateAll();
-		//todo: update bullets
+		//update npcs and bullets
+		npcMgr.UpdateAll(deltaTime);
+		bulletMgr.UpdateAll();
 
 		//check collisions for NPC, bullet, player
 		sceneMgr.DetectCollisionALL(myPlayer);
 		npcMgr.DetectCollisionALL(myPlayer);
+		npcMgr.DetectCollisionIn();
+		bulletMgr.DetectCollisionALL(npcMgr);
 
 		//render all
 		//render skybox
@@ -177,14 +263,24 @@ int main()
 		cubeShader.setMat4("model", model);
 		cubeShader.setMat4("view", view);
 		cubeShader.setMat4("projection", proj);
+		cubeShader.setFloat("lightIntensity", lightIntensity);
 		cubeShader.setInt("cubemap", 0);
-		mySkyBox.draw();
-		glDepthMask(GL_TRUE);
 
 		//render depth
-		lightPos = glm::vec3(0, -5, 10);
-		lightView = glm::lookAt(lightPos, glm::vec3(0.0f), glm::vec3(0.0, 10.0, 0.0));
-		lightProj = glm::perspective(glm::radians(90.0f), 1.f, 1.f, 100.f);
+		if (isMidNight) {
+			nightSkyBox.draw();
+			lightPos = myPlayer.getLoc();
+			lightView = myPlayer.GetView();
+			lightProj = glm::perspective(glm::radians(90.0f), 1.f, 1.f, 100.f);
+		}
+		else {
+			daySkyBox.draw();
+			lightPos = glm::vec3(0, 1, -1);
+			lightView = glm::lookAt(glm::vec3(0, -5, 20), glm::vec3(0.0f), glm::vec3(0.0, 10.0, 0.0));
+			lightProj = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 100.f);	//平行
+		}
+		glDepthMask(GL_TRUE);
+
 		lightSpaceMat = lightProj * lightView;
 		depthMapShader.use();
 		depthMapShader.setMat4("lightSpaceMatrix", lightSpaceMat);
@@ -193,7 +289,8 @@ int main()
 		glClear(GL_DEPTH_BUFFER_BIT);
 		sceneMgr.DrawAll(depthMapShader);
 		npcMgr.DrawAll(depthMapShader);
-		//todo: render bullets
+		bulletMgr.DrawAll(depthMapShader);
+
 		myPlayer.Draw(depthMapShader);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);	//解绑！
 
@@ -206,6 +303,9 @@ int main()
 		modelShadowShader.setMat4("view", view);
 		modelShadowShader.setVec3("viewPos", viewPos);
 		modelShadowShader.setVec3("lightPos", lightPos);
+		modelShadowShader.setVec3("lightColor", glm::vec3(lightIntensity));
+		modelShadowShader.setBool("midNight", isMidNight);
+		modelShadowShader.setVec3("front", myPlayer.getFront());
 		modelShadowShader.setMat4("lightSpaceMatrix", lightSpaceMat);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, myDepthMap.depthMap);
@@ -213,17 +313,24 @@ int main()
 
 		sceneMgr.DrawAll(modelShadowShader);
 		npcMgr.DrawAll(modelShadowShader);
-		//todo:render bullets
+		bulletMgr.DrawAll(modelShadowShader);
 		myPlayer.Draw(modelShadowShader);
 
 		myPlayer.clearLastOps();
+
+		if (lasttime > 0)
+			lasttime--;
+		if (lasttime == 0)
+			myPlayer.model = myPlayer.model1;
 
 		//take at most one screenshot in a second. press F1
 		if (enScreenShot) {
 			if (currentFrame - lastScreenshotTime > 1) {
 				//debug
+				std::cout << isMidNight << std::endl;
 				sceneMgr.ShowInfo();
 				npcMgr.ShowInfo();
+				bulletMgr.ShowInfo();
 				myPlayer.showInfo();
 				std::cout << std::endl;
 				//screenshot

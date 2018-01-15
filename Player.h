@@ -8,6 +8,7 @@
 #include "OBJ.h"
 class Player
 {
+
 public:
 	Player(glm::vec3 &loc, glm::vec3 &front, glm::vec3 &up, float speed, float sen);
 	Player();
@@ -26,12 +27,23 @@ public:
 	void clearLastOps();
 	glm::vec3 getLoc();
 	glm::vec3 getFront();
-private:
+	glm::vec3 getUp();
+	float getYaw();
+	float getPitch();
+	void updateVertical(float deltaTime);
+	bool jump_alr;
 	glm::mat4 oriModelMat;
 	Camera myCamera;
 	Model model;
+	Model model1;
+	Model model2;
 	obbs::OBB obb;
 	obbs::OBB currentObb;
+private:
+	float Hahaplus(float a1, float a2)
+	{
+		return a1*a2;
+	}
 	int score;
 };
 

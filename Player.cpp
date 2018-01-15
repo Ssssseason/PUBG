@@ -2,29 +2,19 @@
 #include <glm/glm.hpp>
 #include "Player.h"
 
+#define G 9.8;
+
 Player::Player(glm::vec3 &loc, glm::vec3 &front, glm::vec3 &up, float speed, float sen)
-:myCamera(loc, front, up, speed, sen), score(0), model("models/man/male02.obj")
+:myCamera(loc, front, up, speed, sen), score(0), model("models/player1/player1.obj"), model1("models/player1/player1.obj"), model2("models/player1/player2.obj")
 {
-	//trick
-	////generate obb
-	//std::vector<glm::vec3> vertices = {
-	//	glm::vec3(0.5f, 0.5f, 0.5f),
-	//	glm::vec3(0.5f, 0.5f, -0.5f),
-	//	glm::vec3(0.5f, -0.5f, 0.5f),
-	//	glm::vec3(0.5f, -0.5f, -0.5f),
-	//	glm::vec3(-0.5f, 0.5f, 0.5f),
-	//	glm::vec3(-0.5f, 0.5f, -0.5f),
-	//	glm::vec3(-0.5f, -0.5f, 0.5f),
-	//	glm::vec3(-0.5f, -0.5f, -0.5f)
-	//};
-	//obb = obbs::getOBB(vertices);
+	Model model2();
 
 	//init original model matrix
 	glm::mat4 modelMat = glm::mat4();
-	modelMat = glm::translate(modelMat, glm::vec3(2, 0, -9.8));
+	modelMat = glm::translate(modelMat, glm::vec3(-0.5, 0.28, -6.0));
 	modelMat = glm::rotate(modelMat, (float)M_PI_2, glm::vec3(0, 0, 1));
 	modelMat = glm::rotate(modelMat, (float)M_PI_2, glm::vec3(1, 0, 0));
-	modelMat = glm::scale(modelMat, glm::vec3(0.05f, 0.05f, 0.05f));
+	modelMat = glm::scale(modelMat, glm::vec3(0.04f, 0.04f, 0.04f));
 	oriModelMat = modelMat;
 
 	//generate obb
@@ -77,7 +67,7 @@ bool Player::checkCollision(OBJ &obj) {
 				}
 			}
 		}
-		std::cout << "collision! " << myCamera.lastOp[0] << " " << myCamera.lastOp[1] << " " << myCamera.lastOp[2] << " " << myCamera.lastOp[3] << "\n";
+		//std::cout << "collision! " << myCamera.lastOp[0] << " " << myCamera.lastOp[1] << " " << myCamera.lastOp[2] << " " << myCamera.lastOp[3] << "\n";
 		//if the collision is caused by rotate view
 		if (!res) {
 			//myCamera.Move(Camera::BACKWARD, false);
@@ -91,19 +81,12 @@ bool Player::checkCollision(OBJ &obj) {
 }
 
 void Player::updateOBB() {
-	//trick
-	//obb.center = myCamera.location;
-
 	glm::mat4 modelMat;
 	modelMat = glm::translate(modelMat, myCamera.location);
 	modelMat = glm::rotate(modelMat, glm::radians(90 - myCamera.yaw), glm::vec3(0, 0, 1));
 	//modelMat = glm::rotate(modelMat, glm::radians(-myCamera.pitch), glm::vec3(0, 1, 0));
 	modelMat = modelMat * oriModelMat;
-	//modelMat = glm::translate(modelMat, glm::vec3(2, 0, -9.8));
-	//modelMat = glm::rotate(modelMat, (float)M_PI_2, glm::vec3(0, 0, 1));
-	//modelMat = glm::rotate(modelMat, (float)M_PI_2, glm::vec3(1, 0, 0));
-	//modelMat = glm::scale(modelMat, glm::vec3(0.05f, 0.05f, 0.05f));
-	
+
 	currentObb = obbs::moveOBB(obb, modelMat);
 }
 
@@ -126,11 +109,6 @@ void Player::Draw(Shader& shader) {
 	modelMat = glm::rotate(modelMat, glm::radians(-myCamera.pitch), glm::vec3(0, 1, 0));
 
 	modelMat = modelMat * oriModelMat;
-	//modelMat = glm::translate(modelMat, glm::vec3(2, 0, -9.8));
-	//modelMat = glm::translate(modelMat, glm::vec3(4, 0, 0));
-	//modelMat = glm::rotate(modelMat, (float)M_PI_2, glm::vec3(0, 0, 1));
-	//modelMat = glm::rotate(modelMat, (float)M_PI_2, glm::vec3(1, 0, 0));
-	//modelMat = glm::scale(modelMat, glm::vec3(0.05f, 0.05f, 0.05f));
 
 	shader.setMat4("model", modelMat);
 	model.Draw(shader);
@@ -167,10 +145,11 @@ void Player::updateScreenSize(float width, float height) {
 
 //debug
 void Player::showInfo() {
+	std::cout << "CAMETA:\n";
 	std::cout << "camera center:" << currentObb.center[0] << "," << currentObb.center[1] << "," << currentObb.center[2] << "\t";
 	std::cout << "half dimension:" << currentObb.halfDimension[0] << "," << currentObb.halfDimension[1] << "," << currentObb.halfDimension[2] << std::endl;
-	std::cout << myCamera.location.x << " " << myCamera.location.y << " " << myCamera.location.z << "\n";
-	std::cout << "yaw:" << myCamera.yaw << "\n";
+	std::cout << "location:" << myCamera.location.x << " " << myCamera.location.y << " " << myCamera.location.z << "\n";
+	std::cout << "yaw:" << myCamera.yaw << "\t";
 	std::cout << "pitch:" << myCamera.pitch << "\n";
 	std::cout << myCamera.front.x << " " << myCamera.front.y << " " << myCamera.front.z << "\t";
 	std::cout << myCamera.right.x << " " << myCamera.right.y << " " << myCamera.right.z << "\t";
@@ -189,3 +168,23 @@ glm::vec3 Player::getLoc() {
 glm::vec3 Player::getFront() {
 	return myCamera.front;
 }
+
+glm::vec3 Player::getUp() {
+	return myCamera.up;
+}
+
+float Player::getYaw() {
+	return myCamera.yaw;
+}
+
+float Player::getPitch() {
+	return myCamera.pitch;
+}
+
+void Player::updateVertical(float deltaTime)
+{
+	myCamera.v = myCamera.v - Hahaplus(deltaTime, 9.8);
+	myCamera.location.z = myCamera.location.z + Hahaplus(deltaTime, myCamera.v) - Hahaplus(9.8, Hahaplus(deltaTime,deltaTime));
+	if (myCamera.location.z <= 0) { myCamera.location.z = 0; myCamera.v = 0; jump_alr = false; }
+}
+

@@ -10,6 +10,9 @@ uniform sampler2D texture_diffuse1;
 uniform sampler2D depthMap;
 uniform vec3 lightPos;
 uniform vec3 viewPos;
+uniform bool midNight;
+uniform vec3 front;
+uniform vec3 lightColor;
 
 float CalShadow(vec4 fragPosLightSpace, vec3 lightDir, vec3 normal){
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
@@ -31,16 +34,33 @@ float CalShadow(vec4 fragPosLightSpace, vec3 lightDir, vec3 normal){
 }
 
 void main() {    
-    vec3 lightColor = vec3(1.0);
+    //vec3 lightColor = vec3(1.0);
     vec3 color = texture(texture_diffuse1, TexCoords).rgb;
 
     vec3 normal = normalize(Normal);
-    vec3 lightDir = normalize(lightPos - FragPos);
+	vec3 lightDir;
+	float lighten;
+	if (midNight){
+		lightDir = normalize(lightPos - FragPos);
+		lighten = dot(normalize(front), -lightDir);
+		if(lighten >= 0.98){
+			lighten = 1;
+		}
+		else if(lighten > 0.96){
+			lighten = (lighten - 0.96) * 50;
+		}
+		else {
+			lighten = 0;
+		}
+	}
+	else {
+		lightDir = -lightPos;
+	}
     vec3 viewDir = normalize(viewPos - FragPos);
     vec3 reflectDir = normalize(reflect(-lightDir, normal));
 
     float shininess = 100;
-    float a = 0.3;
+    float a = 0.2;
     float d = max(dot(lightDir, normal), 0);
     float s = 0.3 * pow(max(dot(reflectDir, viewDir), 0), shininess);
     
@@ -50,6 +70,18 @@ void main() {
 
     float shadow = CalShadow(FragPosLightSpace, lightDir, normal);       
 
-    FragColor = vec4(((ambient + (1.0 - shadow) * (diffuse + specular)) * color), 1.0f);
+	if(midNight){
+		vec3 tmpClr = ambient * color;
+		//if(lighten){
+		//	tmpClr = tmpClr + (1.0 - shadow) * (diffuse + specular) * color;
+		//}
+		tmpClr = tmpClr + lighten * (1.0 - shadow) * (diffuse + specular) * color;
+		FragColor = vec4(tmpClr, 1.0f);
+
+	}
+	else {
+		FragColor = vec4(((ambient + (1.0 - shadow) * (diffuse + specular)) * color), 1.0f);
+	}
+    //FragColor = vec4(((ambient + (1.0 - shadow) * (diffuse + specular)) * color), 1.0f);
     // FragColor = vec4(color, 1.0f);
 }

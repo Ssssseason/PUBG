@@ -1,6 +1,4 @@
 #pragma once
-#ifndef OBJ_H
-
 #include <vector>
 #include <glm/glm.hpp>
 #include "Light.h"
@@ -10,17 +8,17 @@
 class OBJ{
 public:
 	//path for loading model
-	OBJ(glm::mat4 &modelMat, const std::string &modelPath, bool anim = false);
+	OBJ(glm::mat4 &modelMat, Model mod, bool anim = false);
 	virtual ~OBJ();
 	virtual void Draw(Shader &shader);
 	void setOriModelMat(glm::mat4 &newModelMat);
 	obbs::OBB currentObb;
 	//debugs
-	void showInfo();
+	virtual void showInfo();
+	Model model;
 protected:
 	//x,y,z,w
 	glm::mat4 oriModelMat;
-	Model model;
 	obbs::OBB obb;
 	bool isAnim;
 	void initOBB(Model &model);
@@ -31,24 +29,32 @@ class MovableOBJ: public OBJ {
 public:
 	enum MovementDirection
 	{
-		FORWARD, BACKWARD, LEFT, RIGHT
+		FORWARD, BACKWARD, LEFT, RIGHT, UP
 	};
-	MovableOBJ(glm::vec3 &loc, glm::vec3 &front, glm::vec3 &up, float speed, glm::mat4 &modelMat, const std::string &path, bool anim = false);
+	MovableOBJ(glm::vec3 &loc, glm::vec3 &front, glm::vec3 &up, float speed,  glm::mat4 &modelMat, Model mod,double yaw=0, double pitch=0, bool anim = false);
 	virtual ~MovableOBJ();
 	virtual bool detectCollision(OBJ &obj);
 	//virtual bool detectCollision(MovableOBJ &mobj);
-	////keep or remove it
-	//void SetState();	
-	//bool GetState() const;
+	void showInfo();
 	void Draw(Shader &shader);
+
 	void setYaw(double yaw);
-	void setPitch(double pitch);
-	double getYaw();
-	double getPitch();
+	double getYaw() { return yaw; }
+
+	void setPitch(float pitch);
+	float getPitch() { return pitch; }
+
+	void setLoc(glm::vec3 loc) { location = loc; }
+	glm::vec3 getLoc() { return location; }
+	
+	void setFront(glm::vec3 fron) { front = fron; } //update();
+	glm::vec3 getFront() { return front; }
+
 	void move(MovementDirection dir, bool updateOp = true);
+	void updateVertical(float deltaTime);
 	void update();
 	void clearLastOps();
-protected:
+//protected:
 	bool lastOp[4];
 	bool isLive;	//should be kept or removed from its manager
 	glm::vec3 location;
@@ -58,28 +64,28 @@ protected:
 	float pitch;
 	float yaw;
 	float speed;
+	float v;
+	bool jumpAlr;
 	void updateVector();
 	void updateObb();
 };
 
 class NPC : public MovableOBJ {
 public:
-	NPC(glm::vec3 &loc, glm::vec3 &front, glm::vec3 &up, float speed, glm::mat4 &modelMat, const std::string &path, bool anim = false);
+	NPC(glm::vec3 &loc, glm::vec3 &front, glm::vec3 &up, float speed, glm::mat4 &modelMat, Model mod, double yaw, double pitch, bool anim = false);
 	bool detectCollision(OBJ &obj);
 	//bool detectCollision(MovableOBJ &mobj);
+	int turnDegree;
 };
 
 class Bullet : public MovableOBJ {
 public:
-	Bullet(glm::vec3 &loc, glm::vec3 &front, glm::vec3 &up, float speed, glm::mat4 &modelMat, const std::string &path, bool anim = false);
+	Bullet(glm::vec3 &loc, glm::vec3 &front, glm::vec3 &up, float speed, glm::mat4 &modelMat, Model mod, double yaw, double pitch, bool anim = false);
 	//bool detectCollision(OBJ &obj);
 	//bool detectCollision(MovableOBJ &mobj);
-	glm::vec3 getLoc();
-	glm::vec3 getFront();
+	void Draw(Shader &shader);
 };
 
-
-#endif // !OBJ_H
 
 
 

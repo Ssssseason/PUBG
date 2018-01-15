@@ -13,6 +13,7 @@ bool SKYBOX::load(std::string path) {
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
+	glGenTextures(1, &texture);
 	//std::vector<std::string> cubeNames = { "right.jpg", "left.jpg", "bottom.jpg", "top.jpg", "back.jpg", "front.jpg" };
 	std::vector<std::string> cubeNames = { "right.bmp", "left.bmp", "top.bmp", "bottom.bmp", "front.bmp", "back.bmp"};
 	glBindTexture(GL_TEXTURE_CUBE_MAP, texture);

@@ -2,7 +2,7 @@
 #include "Camera.h"
 
 Camera::Camera() {
-
+	v = 0;
 }
 
 Camera::Camera(glm::vec3 &loc, glm::vec3 &front, glm::vec3 &up, float speed, float sen)
@@ -30,6 +30,9 @@ void Camera::Move(Camera::MovementDirection dir, bool updateOp) {
 		break;
 	case Camera::RIGHT:
 		location += right * speed;
+		break;
+	case Camera::UP:
+		v = 9.8;
 		break;
 	}
 	UpdateVector();

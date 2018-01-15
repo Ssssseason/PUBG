@@ -1,6 +1,4 @@
 #pragma once
-#ifndef MGR_H
-
 #include <vector>
 #include "OBJ.h"
 #include "shader.h"
@@ -9,8 +7,8 @@
 class MGR
 {
 public:
-	MGR();
-	virtual ~MGR();
+	MGR() {};
+	virtual ~MGR() {};
 	virtual void DrawAll(Shader &shader) = 0;
 	virtual void DetectCollisionALL(MovableOBJ &mobj) = 0;
 	virtual void DetectCollisionALL(Player &player) = 0;
@@ -19,7 +17,7 @@ public:
 
 class SceneMRG : public MGR {
 public:
-	SceneMRG();
+	SceneMRG() {};
 	void DrawAll(Shader &shader);
 	void DetectCollisionALL(MovableOBJ &obj);
 	void DetectCollisionALL(Player &player);
@@ -34,25 +32,32 @@ public:
 	NPCMGR();
 	void DrawAll(Shader &shader);
 	void DetectCollisionALL(MovableOBJ &mobj);
+	void DetectCollisionBullet(Bullet &bullet);
 	void DetectCollisionALL(Player &player);
+	void DetectCollisionIn();
 	//todo: collide with itself
-	void UpdateAll();
+	void UpdateAll(float deltaTime);
 	void ShowInfo();
-	std::vector<MovableOBJ> objects;
+	std::vector<NPC> objects;
 private:
-	std::vector<MovableOBJ>::iterator it;
+	std::vector<NPC>::iterator it;
+	Model patrick[9];
+	int frames;
+	int expNum;
 };
 
 class BulletMGR : public MGR {
-private:
+public:
+	BulletMGR();
 	void DrawAll(Shader &shader);
-	void CreateNewBullet(glm::vec3 &loc, glm::vec3 &front, float speed);
-	void DetectCollisionALL(MovableOBJ &mobj);
-	void DetectCollisionALL(Player &player);
+	void CreateNewBullet(glm::vec3 &loc, glm::vec3 &front, float speed, glm::vec3 &up, double yaw, double pitch);
+	void DetectCollisionALL(NPCMGR &npc);
+	void DetectCollisionALL(MovableOBJ &mobj) {};
+	void DetectCollisionALL(Player &player) {};
 	void UpdateAll();
-	std::vector<MovableOBJ> objects;
+	std::vector<Bullet> objects;
+	Model bulletModel;
+	void ShowInfo();
 private:
-	std::vector<MovableOBJ>::iterator it;
+	std::vector<Bullet>::iterator it;
 };
-
-#endif // !MGR_H

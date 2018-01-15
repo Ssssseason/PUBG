@@ -9,7 +9,7 @@ class Camera
 public:
 	enum MovementDirection
 	{
-		FORWARD, BACKWARD, LEFT, RIGHT
+		FORWARD, BACKWARD, LEFT, RIGHT, UP
 	};
 	bool lastOp[4];
 	//MovementDirection lastOp[4];
@@ -20,6 +20,7 @@ public:
 	glm::vec3 front;
 	glm::vec3 up;
 	glm::vec3 right;
+	float v;
 	float pitch;
 	float yaw;
 	float speed;
