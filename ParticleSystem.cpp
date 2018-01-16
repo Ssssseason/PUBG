@@ -93,7 +93,7 @@ void tEmitter::updateParticle(tParticle *particle){
 void ParticleSystem::addEmitter(mVector3d pos, mVector3d direction){
     srand((unsigned)time( NULL ));
     tEmitter emitter = *new tEmitter();
-    emitter.totalPtc = 1000;
+    emitter.totalPtc = 5000;
     emitter.ptcPool = (tParticle *)malloc(emitter.totalPtc * sizeof(tParticle));
     for (int i = 0; i < emitter.totalPtc - 1; i++){
         emitter.ptcPool[i].next = &emitter.ptcPool[i + 1];
@@ -109,10 +109,10 @@ void ParticleSystem::addEmitter(mVector3d pos, mVector3d direction){
     emitter.speed_max =  0.02f;
     emitter.speed_min =  0.002f;
     emitter.curPtc    = -1;
-    emitter.pfPtc_max    = 400;
-    emitter.pfPtc_min    = 300;
-    emitter.life_min = 40;
-    emitter.life_max = 85;
+    emitter.pfPtc_max    = 2000;
+    emitter.pfPtc_min    = 1500;
+    emitter.life_min = 50;
+    emitter.life_max = 100;
     emitter.force = mVector3d(0.0f, 0.00f, -0.0005f);
     emitter.ptc     = NULL;                    // NULL TERMINATED LINKED LIST
     emitters.push_back(emitter);

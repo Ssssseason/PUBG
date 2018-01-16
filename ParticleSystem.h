@@ -126,7 +126,6 @@ public:
         -1.0f, -1.0f,  1.0f,
         1.0f, -1.0f,  1.0f
     };
-    
 };
 
 void TransAndRotate(mVector3d pos, mVector3d destiny);

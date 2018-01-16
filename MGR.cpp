@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "MGR.h"
 
-SceneMRG::SceneMRG() {
+SceneMGR::SceneMGR() {
 	//ground
 	Model scene("models/terrain/mountains_4.obj");
 	glm::mat4 model;
@@ -12,25 +12,25 @@ SceneMRG::SceneMRG() {
 	objects.push_back(ourSceneOBJ);
 }
 
-void SceneMRG::DrawAll(Shader &shader) {
+void SceneMGR::DrawAll(Shader &shader) {
 	for (it = objects.begin(); it != objects.end(); ++it) {
 		it->Draw(shader);
 	}
 }
 
-void SceneMRG::DetectCollisionALL(MovableOBJ &mobj) {
+void SceneMGR::DetectCollisionALL(MovableOBJ &mobj) {
 	for (it = objects.begin(); it != objects.end(); ++it) {
 		mobj.detectCollision(*it);
 	}
 }
 
-void SceneMRG::DetectCollisionALL(Player &player) {
+void SceneMGR::DetectCollisionALL(Player &player) {
 	for (it = objects.begin(); it != objects.end(); ++it) {
 		player.checkCollision(*it);
 	}
 }
 
-void SceneMRG::ShowInfo() {
+void SceneMGR::ShowInfo() {
 	std::cout << "Scene:\n";
 	for (it = objects.begin(); it != objects.end(); ++it) {
 		it->showInfo();
@@ -94,6 +94,14 @@ void NPCMGR::DetectCollisionALL(Player &player) {
 	}
 }
 
+void NPCMGR::DetectCollisionALL(SceneMGR &sceneMgr)
+{
+	for (it = objects.begin(); it != objects.end(); ++it) {
+		if(it->isLive)
+			sceneMgr.DetectCollisionALL(*it);
+	}
+}
+
 void NPCMGR::DetectCollisionIn() {
 	for (int i = 0; i < objects.size(); ++i) {
 		for (int j = i + 1; j < objects.size(); ++j) {
@@ -130,7 +138,7 @@ void NPCMGR::UpdateAll(float deltaTime)
 			//if(rand() % 4 == 0)
 			//	it->move(MovableOBJ::FORWARD);
 			////jump
-			//if (rand() % 32 == 0 && !it->jumpAlr)
+			//if (rand() % 128 == 0 && !it->jumpAlr)
 			//{
 			//	it->move(MovableOBJ::UP);
 			//	it->jumpAlr = true;

@@ -15,9 +15,9 @@ public:
 	virtual void ShowInfo() = 0;
 };
 
-class SceneMRG : public MGR {
+class SceneMGR : public MGR {
 public:
-	SceneMRG();
+	SceneMGR();
 	void DrawAll(Shader &shader);
 	void DetectCollisionALL(MovableOBJ &obj);
 	void DetectCollisionALL(Player &player);
@@ -34,6 +34,7 @@ public:
 	void DetectCollisionALL(MovableOBJ &mobj);
 	void DetectCollisionBullet(Bullet &bullet);
 	void DetectCollisionALL(Player &player);
+	void DetectCollisionALL(SceneMGR &sceneMgr);
 	void DetectCollisionIn();
 	//todo: collide with itself
 	void UpdateAll(float deltaTime);

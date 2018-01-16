@@ -51,7 +51,7 @@ void mouseBtnCallback(GLFWwindow* window, int button, int action, int mods) {
 			glm::vec3 up = myPlayer.getUp();
 			//std::cout << "location:" << loc[0] << " " << loc[1] << " " << loc[2] << "\t";
 			std::cout << front.x << " " << front.y << " " << front.z << endl;
-			bulletMgr.CreateNewBullet(loc, front, 0.05f, up, myPlayer.getYaw(), myPlayer.getPitch());
+			bulletMgr.CreateNewBullet(loc, front, 0.5f, up, myPlayer.getYaw(), myPlayer.getPitch());
 			myPlayer.model = myPlayer.model2;
 			lasttime = 3;
 		}
@@ -158,14 +158,13 @@ int main()
 	myPlayer.updateScreenSize(screenWidth, screenHeight);
 
 	//load shaders
-	Shader modelShader("shaders/modelShader.vs", "shaders/modelShader.fs");
 	Shader cubeShader("shaders/cubeShader.vs", "shaders/cubeShader.fs");
 	Shader depthMapShader("shaders/depthMapShader.vs", "shaders/depthMapShader.fs");
 	Shader modelShadowShader("shaders/modelShadowShader.vs", "shaders/modelShadowShader.fs");
 	Shader bloodShader("shaders/bloodShader.vs", "shaders/bloodShader.fs");
 
 	//initialize managers
-	SceneMRG sceneMgr;
+	SceneMGR sceneMgr;
 	NPCMGR npcMgr;
 	//load blood system
 	Blood.load();
@@ -208,6 +207,7 @@ int main()
 
 		//check collisions for NPC, bullet, player
 		sceneMgr.DetectCollisionALL(myPlayer);
+		npcMgr.DetectCollisionALL(sceneMgr);
 		npcMgr.DetectCollisionALL(myPlayer);
 		npcMgr.DetectCollisionIn();
 		bulletMgr.DetectCollisionALL(npcMgr);
