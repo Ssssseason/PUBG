@@ -1,6 +1,16 @@
 #include "stdafx.h"
 #include "MGR.h"
 
+SceneMRG::SceneMRG() {
+	//ground
+	Model scene("models/terrain/mountains_4.obj");
+	glm::mat4 model;
+	model = glm::translate(model, glm::vec3(-50.0f, 100.75f, -20.0f));
+	model = glm::rotate(model, (float)M_PI_2, glm::vec3(1, 0, 0));
+	model = glm::scale(model, glm::vec3(0.05f, 0.05f, 0.05f));
+	OBJ ourSceneOBJ(model, scene);
+	objects.push_back(ourSceneOBJ);
+}
 
 void SceneMRG::DrawAll(Shader &shader) {
 	for (it = objects.begin(); it != objects.end(); ++it) {
@@ -55,11 +65,16 @@ void NPCMGR::DetectCollisionBullet(Bullet &bullet)
 		if ((*it).isLive && (*it).detectCollision(bullet))
 		{
 			(*it).isLive = false;
-			it->turnDegree = 100;
+			it->turnDegree = 50;
 			bullet.isLive = false;
-			//todo:СЃзг
-			glm::vec3 loc = bullet.location;//offset?
-			glm::vec3 front = -bullet.front;
+			//todo:lizi
+			std::cout << "count" << std::endl;
+			glm::vec3 loc = bullet.location + bullet.front * 2.f;
+			std::cout << "blood" << loc.x << "," << loc.y << "," << loc.z << std::endl;
+			glm::vec3 front = bullet.front;
+			std::cout << "%" << front.x << "," << bullet.front.x << std::endl;
+			Blood->addEmitter(*new mVector3d(loc.x, loc.y, loc.z), *new mVector3d(front.x, front.y, front.z));
+			std::cout << loc.x << "," << loc.y << "," << loc.z;
 			break;
 		}
 
@@ -97,34 +112,34 @@ void NPCMGR::UpdateAll(float deltaTime)
 	{
 		if (it->isLive)
 		{
-			//turn
-			if (it->turnDegree == 0) {
-				if (rand() % 32 == 0) {
-					it->turnDegree = rand() % 40 * 4 - 80;
-				}
-			}
-			else if(it->turnDegree > 0){
-				it->setYaw(it->getYaw() + 4);
-				it->turnDegree -= 4;
-			}
-			else if (it->turnDegree < 0) {
-				it->setYaw(it->getYaw() - 4);
-				it->turnDegree += 4;
-			}
-			//move forward
-			if(rand() % 4 == 0)
-				it->move(MovableOBJ::FORWARD);
-			//jump
-			if (rand() % 32 == 0 && !it->jumpAlr)
-			{
-				it->move(MovableOBJ::UP);
-				it->jumpAlr = true;
-			}
-			if (frames % 2) {
-				it->model = patrick[(frames/2) % 9];
-			}
-			it->updateVertical(deltaTime);
-			it->update();
+			////turn
+			//if (it->turnDegree == 0) {
+			//	if (rand() % 32 == 0) {
+			//		it->turnDegree = rand() % 40 * 4 - 80;
+			//	}
+			//}
+			//else if(it->turnDegree > 0){
+			//	it->setYaw(it->getYaw() + 4);
+			//	it->turnDegree -= 4;
+			//}
+			//else if (it->turnDegree < 0) {
+			//	it->setYaw(it->getYaw() - 4);
+			//	it->turnDegree += 4;
+			//}
+			////move forward
+			//if(rand() % 4 == 0)
+			//	it->move(MovableOBJ::FORWARD);
+			////jump
+			//if (rand() % 32 == 0 && !it->jumpAlr)
+			//{
+			//	it->move(MovableOBJ::UP);
+			//	it->jumpAlr = true;
+			//}
+			//if (frames % 2) {
+			//	it->model = patrick[(frames/2) % 9];
+			//}
+			//it->updateVertical(deltaTime);
+			//it->update();
 			++it;
 		}
 		else {
@@ -155,6 +170,10 @@ void NPCMGR::UpdateAll(float deltaTime)
 
 		objects.push_back(aa);
 	}
+}
+
+void NPCMGR::setBlood(ParticleSystem* Blood) {
+	this->Blood = Blood;
 }
 
 //debug
@@ -216,7 +235,11 @@ void BulletMGR::UpdateAll()
 		//std::cout << it->location.x << " " << it->location.y << " " << it->location.z << " " << it->front.x << " " << it->front.y << " " << it->front.z<<endl;
 	}
 }
-	
+
+void BulletMGR::setBlood(ParticleSystem* Blood) {
+	this->Blood = Blood;
+}
+
 void BulletMGR::ShowInfo()
 {
 	std::cout << "BULLET:\n" << "vector size:" << objects.size() << "\n";

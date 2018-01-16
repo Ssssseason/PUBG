@@ -207,18 +207,3 @@ glm::vec3 obbs::getRV(const OBB &a, const OBB &b) {
 	return glm::normalize(b.center - a.center);
 }
 
-//glm::vec3 obbs::getOverlap(const OBB& a, const OBB &b) {
-//	glm::vec3 vecAB = a.center - b.center;
-//	glm::vec3 norVecAB = glm::normalize(vecAB);
-//	glm::vec3 halfA[3] = { a.halfDimension.x * a.axis[0], a.halfDimension.y * a.axis[1], a.halfDimension.z * a.axis[2] };
-//	glm::vec3 halfB[3] = { b.halfDimension.x * b.axis[0], b.halfDimension.y * b.axis[1], b.halfDimension.z * b.axis[2] };
-//	double dis = 0;
-//	//for (int i = 0; i < 3; i++) {
-//	//	dis += fabs(glm::dot(halfA[i], orientation)) + fabs(glm::dot(halfB[i], orientation));
-//	//}
-//	//return fabs(dis - fabs(glm::dot(orientation, vecAB)));
-//	for (int i = 0; i < 3; i++) {
-//		dis += fabs(glm::dot(halfA[i], norVecAB)) + fabs(glm::dot(halfB[i], norVecAB));
-//	}
-//	return (float)(dis - fabs(glm::dot(norVecAB, vecAB))) * norVecAB;
-//}

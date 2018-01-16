@@ -3,10 +3,8 @@
 #include <iostream>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-//#include <glut/glut.h>
 #include <glm/glm.hpp>
 #include <stdlib.h> 
-#include <time.h> 
 #include <ctime>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -19,12 +17,13 @@
 #include "shader.h"
 #include "skybox.h"
 #include "depthMap.h"
-
+#include "ParticleSystem.h"
 
 BulletMGR bulletMgr;
 Player myPlayer;
+ParticleSystem Blood;
 
-int screenWidth = 1920, screenHeight = 1080;
+int screenWidth = 1280, screenHeight = 800;
 float lastFrame, deltaTime, lastScreenshotTime;
 bool enScreenShot = false;
 bool isMidNight = false;
@@ -52,7 +51,7 @@ void mouseBtnCallback(GLFWwindow* window, int button, int action, int mods) {
 			glm::vec3 up = myPlayer.getUp();
 			//std::cout << "location:" << loc[0] << " " << loc[1] << " " << loc[2] << "\t";
 			std::cout << front.x << " " << front.y << " " << front.z << endl;
-			bulletMgr.CreateNewBullet(loc, front, 0.5f, up, myPlayer.getYaw(), myPlayer.getPitch());
+			bulletMgr.CreateNewBullet(loc, front, 0.05f, up, myPlayer.getYaw(), myPlayer.getPitch());
 			myPlayer.model = myPlayer.model2;
 			lasttime = 3;
 		}
@@ -158,71 +157,31 @@ int main()
 	myPlayer = Player(playerLoc, playerFront, playerUp, 0.05, 0.1);
 	myPlayer.updateScreenSize(screenWidth, screenHeight);
 
-	glm::mat4 model, view, proj;
-	glm::mat4 lightProj, lightView, lightSpaceMat;
-
-	glm::vec3 lightPos;
-	glm::vec3 viewPos;
-
 	//load shaders
 	Shader modelShader("shaders/modelShader.vs", "shaders/modelShader.fs");
 	Shader cubeShader("shaders/cubeShader.vs", "shaders/cubeShader.fs");
 	Shader depthMapShader("shaders/depthMapShader.vs", "shaders/depthMapShader.fs");
 	Shader modelShadowShader("shaders/modelShadowShader.vs", "shaders/modelShadowShader.fs");
+	Shader bloodShader("shaders/bloodShader.vs", "shaders/bloodShader.fs");
 
-	//Model bullet("models/bullet/bullet2.obj");
-	//Model female("models/female/female02.obj");
-	//Model male("models/man/male02.obj");
-	Model scene("models/terrain/mountains_4.obj");
-	//Model sanji("models/Sanji/Sanji.obj");
-	//Model boy("models/boy/boy.obj");
-	//Model aerith("models/Aerith/Aerith.obj");
-	//Model patrick1("models/patrick/patrick1.obj");
-	//Model patrick2("models/patrick/patrick2.obj");
-	//Model patrick3("models/patrick/patrick3.obj");
-	//Model patrick4("models/patrick/patrick4.obj");
-	//Model patrick5("models/patrick/patrick5.obj");
-	//Model patrick6("models/patrick/patrick6.obj");
-	//Model patrick7("models/patrick/patrick7.obj");
-	//Model patrick8("models/patrick/patrick8.obj");
-	//Model patrick9("models/patrick/patrick9.obj");
-	//Model patrick[9] = { patrick1, patrick2, patrick3, patrick4,patrick5, patrick6, patrick7, patrick8 ,patrick9 };
-
+	//initialize managers
 	SceneMRG sceneMgr;
 	NPCMGR npcMgr;
-	std::vector<NPC>::iterator it;
+	//load blood system
+	Blood.load();
+	//set blood system in managers
+	npcMgr.setBlood(&Blood);
+	bulletMgr.setBlood(&Blood);
 
-	//load static models
-	
-	//model = glm::mat4();
-	//model = glm::translate(model, glm::vec3(0.0f, 10.75f, 0.0f));
-	//model = glm::rotate(model, (float)M_PI_2, glm::vec3(1, 0, 0));
-	//model = glm::scale(model, glm::vec3(0.05f, 0.05f, 0.05f));
-	//OBJ ourFemaleOBJ(model, female);
-
-	//model = glm::mat4();
-	//model = glm::translate(model, glm::vec3(0.0f, 20.f, -5.0f));
-	//model = glm::rotate(model, (float)M_PI_2, glm::vec3(1, 0, 0));
-	//model = glm::scale(model, glm::vec3(0.05f, 0.05f, 0.05f));
-	//OBJ ourMaleOBJ(model, male);
-	
-	//ground
-	model = glm::mat4();
-	model = glm::translate(model, glm::vec3(-50.0f, 100.75f, -20.0f));
-	model = glm::rotate(model, (float)M_PI_2, glm::vec3(1, 0, 0));
-	model = glm::scale(model, glm::vec3(0.05f, 0.05f, 0.05f));
-	OBJ ourSceneOBJ(model, scene);
-	//add to scene manager
-	//sceneMgr.objects.push_back(ourFemaleOBJ);
-	//sceneMgr.objects.push_back(ourMaleOBJ);
-	sceneMgr.objects.push_back(ourSceneOBJ);
-
-	SKYBOX daySkyBox, nightSkyBox;
-	daySkyBox.load("skybox/daytime");
-	nightSkyBox.load("skybox/night");
+	SKYBOX daySkyBox("skybox/daytime"), nightSkyBox("skybox/night");
 
 	DepthMap myDepthMap(4098, 4098);
 
+	glm::mat4 model, view, proj;
+	glm::mat4 lightProj, lightView, lightSpaceMat;
+
+	glm::vec3 lightPos;
+	glm::vec3 viewPos;
 	int frames = 0;
 
 	while (!glfwWindowShouldClose(window))
@@ -266,7 +225,7 @@ int main()
 		cubeShader.setFloat("lightIntensity", lightIntensity);
 		cubeShader.setInt("cubemap", 0);
 
-		//render depth
+		//render skybox and set light attrs
 		if (isMidNight) {
 			nightSkyBox.draw();
 			lightPos = myPlayer.getLoc();
@@ -281,6 +240,16 @@ int main()
 		}
 		glDepthMask(GL_TRUE);
 
+		//render blood
+		view = myPlayer.GetView();
+		proj = myPlayer.GetProj();
+		viewPos = myPlayer.getLoc();
+		bloodShader.use();
+		bloodShader.setMat4("view", view);
+		bloodShader.setMat4("projection", proj);
+		Blood.renderEmitter(bloodShader);
+
+		//render depth
 		lightSpaceMat = lightProj * lightView;
 		depthMapShader.use();
 		depthMapShader.setMat4("lightSpaceMatrix", lightSpaceMat);
@@ -290,7 +259,6 @@ int main()
 		sceneMgr.DrawAll(depthMapShader);
 		npcMgr.DrawAll(depthMapShader);
 		bulletMgr.DrawAll(depthMapShader);
-
 		myPlayer.Draw(depthMapShader);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);	//解绑！
 
@@ -327,7 +295,6 @@ int main()
 		if (enScreenShot) {
 			if (currentFrame - lastScreenshotTime > 1) {
 				//debug
-				std::cout << isMidNight << std::endl;
 				sceneMgr.ShowInfo();
 				npcMgr.ShowInfo();
 				bulletMgr.ShowInfo();
@@ -349,7 +316,6 @@ int main()
 				enScreenShot = false;
 			}
 		}
-
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}

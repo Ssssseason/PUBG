@@ -72,9 +72,6 @@ void main() {
 
 	if(midNight){
 		vec3 tmpClr = ambient * color;
-		//if(lighten){
-		//	tmpClr = tmpClr + (1.0 - shadow) * (diffuse + specular) * color;
-		//}
 		tmpClr = tmpClr + lighten * (1.0 - shadow) * (diffuse + specular) * color;
 		FragColor = vec4(tmpClr, 1.0f);
 

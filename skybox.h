@@ -52,7 +52,8 @@ private:
 	};
 
 public:
-	bool load(std::string path);
+	//bool load(std::string path);
+	SKYBOX(const std::string &path);
 	void draw();
 };
 

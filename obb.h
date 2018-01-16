@@ -30,8 +30,7 @@ namespace obbs {
 	bool collides(const OBB& a, const OBB &b);
 
 	glm::vec3 getRV(const OBB &a, const OBB &b);
-	////if collision happens, get overlap distance in the orientation of a or b
-	//glm::vec3 getOverlap(const OBB& a, const OBB &b);
+
 }
 
 #endif // !OBB_H
