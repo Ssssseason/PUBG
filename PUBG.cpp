@@ -11,6 +11,7 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image_write.h>
 #include "OBJ.h"
+#include <GL/glut.h>
 #include "MGR.h"
 #include "Player.h"
 #include "Light.h"
@@ -51,7 +52,7 @@ void mouseBtnCallback(GLFWwindow* window, int button, int action, int mods) {
 			glm::vec3 up = myPlayer.getUp();
 			//std::cout << "location:" << loc[0] << " " << loc[1] << " " << loc[2] << "\t";
 			std::cout << front.x << " " << front.y << " " << front.z << endl;
-			bulletMgr.CreateNewBullet(loc, front, 0.5f, up, myPlayer.getYaw(), myPlayer.getPitch());
+			bulletMgr.CreateNewBullet(loc, front, 5.0f, up, myPlayer.getYaw(), myPlayer.getPitch());
 			myPlayer.model = myPlayer.model2;
 			lasttime = 3;
 		}
@@ -154,7 +155,7 @@ int main()
 	glm::vec3 playerLoc = glm::vec3(0, -3, 0);
 	glm::vec3 playerFront = glm::vec3(0, 1, 0);
 	glm::vec3 playerUp = glm::vec3(0, 0, 1);
-	myPlayer = Player(playerLoc, playerFront, playerUp, 0.05, 0.1);
+	myPlayer = Player(playerLoc, playerFront, playerUp, 5., 0.1);
 	myPlayer.updateScreenSize(screenWidth, screenHeight);
 
 	//load shaders
@@ -235,8 +236,8 @@ int main()
 		else {
 			daySkyBox.draw();
 			lightPos = glm::vec3(0, 1, -1);
-			lightView = glm::lookAt(glm::vec3(0, -5, 20), glm::vec3(0.0f), glm::vec3(0.0, 10.0, 0.0));
-			lightProj = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 100.f);	//平行
+			lightView = glm::lookAt(glm::vec3(-200, -5, 80), glm::vec3(0.0f), glm::vec3(0.0, 50.0, 0.0));
+			lightProj = glm::ortho(-400.0f, 400.0f, -400.0f, 400.0f, 20.0f, 2000.f);	//平行
 		}
 		glDepthMask(GL_TRUE);
 
@@ -295,11 +296,11 @@ int main()
 		if (enScreenShot) {
 			if (currentFrame - lastScreenshotTime > 1) {
 				//debug
-				sceneMgr.ShowInfo();
-				npcMgr.ShowInfo();
-				bulletMgr.ShowInfo();
-				myPlayer.showInfo();
-				std::cout << std::endl;
+				//sceneMgr.ShowInfo();
+				//npcMgr.ShowInfo();
+				//bulletMgr.ShowInfo();
+				//myPlayer.showInfo();
+				//std::cout << std::endl;
 				//screenshot
 				lastScreenshotTime = currentFrame;
 				time_t now = time(NULL);

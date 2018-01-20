@@ -5,11 +5,39 @@ SceneMGR::SceneMGR() {
 	//ground
 	Model scene("models/terrain/mountains_4.obj");
 	glm::mat4 model;
-	model = glm::translate(model, glm::vec3(-50.0f, 100.75f, -20.0f));
+	model = glm::translate(model, glm::vec3(-300.0f, 500.75f, -40.0f));
 	model = glm::rotate(model, (float)M_PI_2, glm::vec3(1, 0, 0));
-	model = glm::scale(model, glm::vec3(0.05f, 0.05f, 0.05f));
+	model = glm::scale(model, glm::vec3(1.0f, 0.05f, 1.0f));
+	//model = glm::translate(model, glm::vec3(0.0f, -0.0f, -40.0f));
 	OBJ ourSceneOBJ(model, scene);
 	objects.push_back(ourSceneOBJ);
+	model = glm::mat4();
+	model = glm::translate(model, glm::vec3(100.0f, -100.0f, -40.0f));
+	model = glm::rotate(model, (float)M_PI_2, glm::vec3(1, 0, 0));
+	model = glm::scale(model, glm::vec3(6.0f, 6.0f, 6.0f));
+	Model house("models/house/house.obj");
+	OBJ ourHouse(model, house);
+	objects.push_back(ourHouse);
+	model = glm::mat4();
+	model = glm::translate(model, glm::vec3(300.0f, -0.0f, -40.0f));
+	model = glm::rotate(model, (float)M_PI_2, glm::vec3(1, 0, 0));
+	model = glm::scale(model, glm::vec3(3.0f, 3.0f, 3.0f));
+	Model tree1("models/tree/tree2.obj");
+	OBJ ourtree1(model, tree1);
+	objects.push_back(ourtree1);
+	for (int i = 0; i < 10; i++)
+	{
+		float r1 = 400 * rand() / double(RAND_MAX) + 100;
+		float r2 = -400 * rand() / double(RAND_MAX) - 100;
+		model = glm::mat4();
+		model = glm::translate(model, glm::vec3(r1, r2, -40.0f));
+		model = glm::rotate(model, (float)M_PI_2, glm::vec3(1, 0, 0));
+		model = glm::scale(model, glm::vec3(3.0f, 3.0f, 3.0f));
+		Model tree("models/tree/tree2.obj");
+		OBJ ourtree2(model, tree);
+		objects.push_back(ourtree2);
+	}
+	
 }
 
 void SceneMGR::DrawAll(Shader &shader) {
@@ -26,7 +54,10 @@ void SceneMGR::DetectCollisionALL(MovableOBJ &mobj) {
 
 void SceneMGR::DetectCollisionALL(Player &player) {
 	for (it = objects.begin(); it != objects.end(); ++it) {
-		player.checkCollision(*it);
+		if (it != objects.begin()) {
+			player.checkCollision(*it);
+
+		}
 	}
 }
 
@@ -68,13 +99,13 @@ void NPCMGR::DetectCollisionBullet(Bullet &bullet)
 			it->turnDegree = 50;
 			bullet.isLive = false;
 			//todo:lizi
-			std::cout << "count" << std::endl;
+			//std::cout << "count" << std::endl;
 			glm::vec3 loc = bullet.location + bullet.front * 2.f;
-			std::cout << "blood" << loc.x << "," << loc.y << "," << loc.z << std::endl;
+			//std::cout << "blood" << loc.x << "," << loc.y << "," << loc.z << std::endl;
 			glm::vec3 front = bullet.front;
-			std::cout << "%" << front.x << "," << bullet.front.x << std::endl;
+			//std::cout << "%" << front.x << "," << bullet.front.x << std::endl;
 			Blood->addEmitter(*new mVector3d(loc.x, loc.y, loc.z), *new mVector3d(front.x, front.y, front.z));
-			std::cout << loc.x << "," << loc.y << "," << loc.z;
+			//std::cout << loc.x << "," << loc.y << "," << loc.z;
 			break;
 		}
 
@@ -121,44 +152,44 @@ void NPCMGR::UpdateAll(float deltaTime)
 		if (it->isLive)
 		{
 			////turn
-			//if (it->turnDegree == 0) {
-			//	if (rand() % 32 == 0) {
-			//		it->turnDegree = rand() % 40 * 4 - 80;
-			//	}
-			//}
-			//else if(it->turnDegree > 0){
-			//	it->setYaw(it->getYaw() + 4);
-			//	it->turnDegree -= 4;
-			//}
-			//else if (it->turnDegree < 0) {
-			//	it->setYaw(it->getYaw() - 4);
-			//	it->turnDegree += 4;
-			//}
+			if (it->turnDegree == 0) {
+				if (rand() % 32 == 0) {
+					it->turnDegree = rand() % 40 * 4 - 80;
+				}
+			}
+			else if(it->turnDegree > 0){
+				it->setYaw(it->getYaw() + 4);
+				it->turnDegree -= 4;
+			}
+			else if (it->turnDegree < 0) {
+				it->setYaw(it->getYaw() - 4);
+				it->turnDegree += 4;
+			}
 			////move forward
-			//if(rand() % 4 == 0)
-			//	it->move(MovableOBJ::FORWARD);
+			if(rand() % 4 == 0)
+				it->move(MovableOBJ::FORWARD);
 			////jump
-			//if (rand() % 128 == 0 && !it->jumpAlr)
-			//{
-			//	it->move(MovableOBJ::UP);
-			//	it->jumpAlr = true;
-			//}
-			//if (frames % 2) {
-			//	it->model = patrick[(frames/2) % 9];
-			//}
-			//it->updateVertical(deltaTime);
-			//it->update();
+			if (rand() % 128 == 0 && !it->jumpAlr)
+			{
+				it->move(MovableOBJ::UP);
+				it->jumpAlr = true;
+			}
+			if (frames % 2) {
+				it->model = patrick[(frames/2) % 9];
+			}
+			it->updateVertical(deltaTime);
+			it->update();
 			++it;
 		}
 		else {
 			if (it->turnDegree) {
 				if (it->turnDegree % 2) {
-					it->setYaw(it->getYaw() + 10);
-					it->setPitch(it->getPitch() + 8);
+					it->setYaw(it->getYaw() + 2);
+					it->setPitch(it->getPitch() + 1.3);
 				}
 				else {
-					it->setYaw(it->getYaw() - 10);
-					it->setPitch(it->getPitch() - 8);
+					it->setYaw(it->getYaw() - 2);
+					it->setPitch(it->getPitch() - 1.3);
 				}
 				it->turnDegree--;
 				++it;
@@ -170,11 +201,15 @@ void NPCMGR::UpdateAll(float deltaTime)
 	}
 	if (frames % 100 == 0 && objects.size() < expNum)			//add more npcs every a period of time
 	{
+		float r1 = 200 * rand() / double(RAND_MAX);
+		float r2 = -200 * rand() / double(RAND_MAX);
 		glm::mat4 model = glm::mat4();
+		//model = glm::translate(model, glm::vec3(0, 0, -40.0f));
 		model = glm::rotate(model, (float)M_PI_2, glm::vec3(0, 0, 1));
 		model = glm::rotate(model, (float)M_PI_2, glm::vec3(1, 0, 0));
-		model = glm::scale(model, glm::vec3(2.f, 2.f, 2.f));
-		NPC aa(glm::vec3((rand() / double(RAND_MAX) - 0.5) * 40, (rand() / double(RAND_MAX) - 0.5) * 40, 0), glm::vec3(0, 1, 0), glm::vec3(0, 0, 1), 0.1f, model, patrick[0], 0, 0);
+		float r = rand() / (double)RAND_MAX;
+		model = glm::scale(model, glm::vec3(10.f, 10.f, 10.f));
+		NPC aa(glm::vec3(r1,r2,-23/*(rand() / double(RAND_MAX) - 0.5) * 100, (rand() / double(RAND_MAX) - 0.5) * 100, 0*/), glm::vec3(0, 1, 0), glm::vec3(0, 0, 1), 0.3f, model, patrick[0], 0, 0);
 
 		objects.push_back(aa);
 	}
@@ -204,7 +239,7 @@ void BulletMGR::DrawAll(Shader &shader)
 
 void BulletMGR::CreateNewBullet(glm::vec3 &loc, glm::vec3 &front, float speed, glm::vec3 &up,double yaw, double pitch )
 {
-	std::cout << "newBullet:\n";
+	//std::cout << "newBullet:\n";
 	if (bulletModel.meshes.size() == 0) {
 		bulletModel = Model("models/bullet/bullet2.obj");
 	}
@@ -214,7 +249,7 @@ void BulletMGR::CreateNewBullet(glm::vec3 &loc, glm::vec3 &front, float speed, g
 	model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));
 	Bullet ourBulletOBJ(loc, front, up, speed, model, this->bulletModel, yaw, pitch);
 
-	std::cout << ourBulletOBJ.front.x << " " << ourBulletOBJ.front.y << " " << ourBulletOBJ.front.z << endl;
+	//std::cout << ourBulletOBJ.front.x << " " << ourBulletOBJ.front.y << " " << ourBulletOBJ.front.z << endl;
 	ourBulletOBJ.showInfo();
 	objects.push_back(ourBulletOBJ);
 }

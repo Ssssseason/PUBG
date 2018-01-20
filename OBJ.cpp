@@ -123,10 +123,15 @@ void MovableOBJ::updateVertical(float deltaTime)
 {
 	v -= deltaTime * 9.8;
 	location.z += deltaTime * v - 9.8 * deltaTime * deltaTime;
-	if (location.z <= 0) { 
-		location.z = 0; 
-		v = 0; 
-		jumpAlr = false; 
+	//if (location.z <= 0) { 
+	//	location.z = 0; 
+	//	v = 0; 
+	//	jumpAlr = false; 
+	//}
+	if (location.z <= -23) {
+		location.z = -23;
+		v = 0;
+		jumpAlr = false;
 	}
 }
 void MovableOBJ::updateVector() {
@@ -198,7 +203,7 @@ bool NPC::detectCollision(OBJ &obj) {
 			}
 		}
 		move(MovableOBJ::BACKWARD, false);
-		std::cout << "collision! " << lastOp[0] << " " << lastOp[1] << " " << lastOp[2] << " " << lastOp[3] << "\n";
+		//std::cout << "collision! " << lastOp[0] << " " << lastOp[1] << " " << lastOp[2] << " " << lastOp[3] << "\n";
 		//if the collision is caused by rotate view
 		if (!res) {
 			glm::vec3 rv = obbs::getRV(currentObb, obj.currentObb);

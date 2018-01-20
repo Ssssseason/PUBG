@@ -82,6 +82,8 @@ bool Player::checkCollision(OBJ &obj) {
 
 void Player::updateOBB() {
 	glm::mat4 modelMat;
+	//modelMat = glm::translate(modelMat, glm::vec3(0,0,40.f));
+
 	modelMat = glm::translate(modelMat, myCamera.location);
 	modelMat = glm::rotate(modelMat, glm::radians(90 - myCamera.yaw), glm::vec3(0, 0, 1));
 	//modelMat = glm::rotate(modelMat, glm::radians(-myCamera.pitch), glm::vec3(0, 1, 0));
@@ -185,6 +187,7 @@ void Player::updateVertical(float deltaTime)
 {
 	myCamera.v = myCamera.v - Hahaplus(deltaTime, 9.8);
 	myCamera.location.z = myCamera.location.z + Hahaplus(deltaTime, myCamera.v) - Hahaplus(9.8, Hahaplus(deltaTime,deltaTime));
-	if (myCamera.location.z <= 0) { myCamera.location.z = 0; myCamera.v = 0; jump_alr = false; }
+	//if (myCamera.location.z <= 0) { myCamera.location.z = 0; myCamera.v = 0; jump_alr = false; }
+	if (myCamera.location.z <= -20) { myCamera.location.z = -20; myCamera.v = 0; jump_alr = false; }
 }
 

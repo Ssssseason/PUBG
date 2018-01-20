@@ -14,8 +14,8 @@ double Random(){
 }
 
 void RandomDirection(double vox, double voy, mVector3d *direction){
-    direction->x = (double) (sin(voy) * sin(vox));
-    direction->y = (double) cos(voy);
+    direction->x = (double) (sin(voy) * sin(vox)) / 2;
+    direction->y = (double) cos(voy) / 2;
     direction->z = (double) (sin(voy) * cos(vox));
 }
 
@@ -27,7 +27,7 @@ tEmitter::~tEmitter(){
 void tParticle::draw(GLuint VAO, mVector3d location, Shader& bloodShader){
     glm::mat4 modelMat = glm::mat4();
     glm::vec3 loc = glm::vec3(location.x, location.y, location.z);
-    glm::vec3 scale = glm::vec3(0.005,0.005,0.005);
+    glm::vec3 scale = glm::vec3(0.01,0.01,0.01);
     
     modelMat = glm::translate(modelMat, loc);
     modelMat = glm::scale(modelMat, scale);
@@ -73,7 +73,7 @@ void tEmitter::addParticle(){
 void tEmitter::updateParticle(tParticle *particle){
     if (particle != NULL && particle->restLife > 0){
         particle->pos = particle->pos - particle->direction;
-        particle->direction = particle->direction - force;
+        particle->direction = particle->direction - force*Random();
         particle->restLife--;
     }else if (particle != NULL && particle->restLife == 0){
         // 修改当前粒子的前后粒子的指针
@@ -93,7 +93,7 @@ void tEmitter::updateParticle(tParticle *particle){
 void ParticleSystem::addEmitter(mVector3d pos, mVector3d direction){
     srand((unsigned)time( NULL ));
     tEmitter emitter = *new tEmitter();
-    emitter.totalPtc = 5000;
+    emitter.totalPtc = 10000;
     emitter.ptcPool = (tParticle *)malloc(emitter.totalPtc * sizeof(tParticle));
     for (int i = 0; i < emitter.totalPtc - 1; i++){
         emitter.ptcPool[i].next = &emitter.ptcPool[i + 1];
@@ -102,18 +102,18 @@ void ParticleSystem::addEmitter(mVector3d pos, mVector3d direction){
     //可改为外部设置
     emitter.pos = pos;
     emitter.direction = direction;
-    emitter.voy_max =    DEGTORAD(180.0f);
-    emitter.voy_min =    DEGTORAD(0.0f);
+    emitter.voy_max =    DEGTORAD(120.0f);
+    emitter.voy_min =    DEGTORAD(60.0f);
     emitter.vox_max =    DEGTORAD(360.0f);
     emitter.vox_min =  DEGTORAD(0.0f);
-    emitter.speed_max =  0.02f;
-    emitter.speed_min =  0.002f;
+    emitter.speed_max =  0.12f;
+    emitter.speed_min =  0.012f;
     emitter.curPtc    = -1;
-    emitter.pfPtc_max    = 2000;
-    emitter.pfPtc_min    = 1500;
-    emitter.life_min = 50;
-    emitter.life_max = 100;
-    emitter.force = mVector3d(0.0f, 0.00f, -0.0005f);
+    emitter.pfPtc_max    = 4000;
+    emitter.pfPtc_min    = 3000;
+    emitter.life_min = 25;
+    emitter.life_max = 80;
+    emitter.force = mVector3d(0.0f, 0.00f, -0.005f);
     emitter.ptc     = NULL;                    // NULL TERMINATED LINKED LIST
     emitters.push_back(emitter);
 }
@@ -174,7 +174,9 @@ void ParticleSystem::load(){
 }
 
 void TransAndRotate(mVector3d pos, mVector3d destiny){
+	float r = Random()/2-1;
     glTranslatef(pos.x, pos.y, pos.z);
+	glTranslatef(3*r, 3*r, 3*r);
     double axis[3];
     axis[0] = destiny.z;
     axis[1] = 0;

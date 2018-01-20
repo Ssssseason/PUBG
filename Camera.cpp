@@ -81,7 +81,7 @@ glm::mat4 Camera::GetView() {
 }
 
 glm::mat4 Camera::GetProj() {
-	return glm::perspective(glm::radians(fov), (float)screenWidth / (float)screenHeight, 0.1f, 100.f);
+	return glm::perspective(glm::radians(fov), (float)screenWidth / (float)screenHeight, 0.1f, 1000.f);
 }
 
 void Camera::UpdateVector() {
